@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<launch>
+    <!-- Arguments -->
+    <arg name="data_folder" default="$(find wifi_rssi_collection)/data"/> <!-- The folder to save data to -->
+    <arg name="input_topic" default = "default_input"/> <!-- Input odometry topic -->
+    <arg name="visualize_data" default="false"/> <!-- If visualize data while collecting -->
+    <arg name="visualize_mode" default="false"/> <!-- Visualize collected data only -->
+
+    <!-- Start the node -->
+    <node name="wifi_rssi_collection" pkg="wifi_rssi_collection" type="collect_node" output="screen" respawn="false">
+        <param name="data_folder" value="$(arg data_folder)"/>
+        <param name="input_topic" value="$(arg input_topic)"/>
+        <param name="visualize_data" value="$(arg visualize_data)"/>
+        <param name="visualize_mode" value="$(arg visualize_mode)"/>
+    </node>
+    
+    <!-- Visualization in rviz -->
+    <arg name="rviz" default="false" />
+    <group if="$(arg rviz)">
+        <node launch-prefix="nice" pkg="rviz" type="rviz" name="rviz" args="-d $(find wifi_rssi_collection)/rviz/visualize.rviz" />
+    </group>
+</launch>

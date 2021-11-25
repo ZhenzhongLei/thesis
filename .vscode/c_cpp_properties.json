@@ -1,0 +1,28 @@
+{
+  "configurations": [
+    {
+      "browse": {
+        "databaseFilename": "",
+        "limitSymbolsToIncludedHeaders": true
+      },
+      "includePath": [
+        "/home/zhenzhinglei/catkin_ws/devel/include/**",
+        "/home/zhenzhinglei/Third-party/MYNT-EYE-D-SDK/wrappers/ros/devel/include/**",
+        "/opt/ros/melodic/include/**",
+        "/home/zhenzhinglei/catkin_ws/src/cam_lidar_calibration/include/**",
+        "/home/zhenzhinglei/catkin_ws/src/ddynamic_reconfigure/include/**",
+        "/home/zhenzhinglei/catkin_ws/src/golf_segmentation/include/**",
+        "/home/zhenzhinglei/catkin_ws/src/lib_luxc/include/**",
+        "/home/zhenzhinglei/catkin_ws/src/camera_lidar_calib/include/**",
+        "/home/zhenzhinglei/catkin_ws/src/luxc-lo/include/**",
+        "/home/zhenzhinglei/catkin_ws/src/ndt_mapping/include/**",
+        "/home/zhenzhinglei/catkin_ws/src/opal-ros-wrapper/include/**",
+        "/home/zhenzhinglei/catkin_ws/src/realsense-ros/realsense2_camera/include/**",
+        "/home/zhenzhinglei/catkin_ws/src/usb_cam/include/**",
+        "/usr/include/**"
+      ],
+      "name": "ROS"
+    }
+  ],
+  "version": 4
+}
