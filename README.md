@@ -1,5 +1,5 @@
 <div align="center" id="top"> 
-  <img src="./.github/app.gif" alt="Wifi_rssi_collection" />
+  <img src="./img/rssi.jpg" alt="Wifi_rssi_collection" />
 
   &#xa0;
 
@@ -39,7 +39,7 @@
   <a href="#white_check_mark-requirements">Requirements</a> &#xa0; | &#xa0;
   <a href="#checkered_flag-starting">Starting</a> &#xa0; | &#xa0;
   <a href="#memo-license">License</a> &#xa0; | &#xa0;
-  <a href="https://github.com/{{YOUR_GITHUB_USERNAME}}" target="_blank">Author</a>
+  <a href="blank">Author</a>
 </p>
 
 <br>
@@ -50,16 +50,16 @@ As the package name suggets, this package is developed to source wifi data. Thre
 
 ## :sparkles: Features ##
 
-Feature 1: ROS support\
-Feature 2: iwlist or scapy\ 
-Feature 3: SQL data storage\
-Feature 4: Error Info Logging
+Feature 1: ROS support \
+Feature 2: rssi(based on iwlist) or scapy\
+Feature 3: SQL data storage \
+Feature 4: Error Info Logging  
 
 ## :rocket: Technologies ##
 
 The following tools were used in this project:
 
-- [Python 2.7](https://www.python.org/download/releases/2.7/)
+- [Python 3](https://www.python.org/downloads/)
 - [ROS melodic](http://wiki.ros.org/melodic)
 
 ## :white_check_mark: Requirements ##
@@ -71,7 +71,7 @@ Before stating, you need have ROS (refer to link above) and related Python packa
 ```bash
 ```bash
 # Clone this project
-$ cd ~/catkin/src && git clone project
+$ cd ~/catkin/src && git clone https://github.com/ZhenzhongLei/thesis.git
 
 # Compile
 $ cd ~/catkin && catkin_make
@@ -88,6 +88,8 @@ $ roslaunch wifi_rssi_collection collect.launch
 ## :memo: License ##
 
 To-do
+
+## "memo" license ##
 
 Developed by <a href="leizhenzhong15@gmail.com" target="_blank">{zhenzhong lei}</a>
 &#xa0;

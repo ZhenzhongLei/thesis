@@ -1,10 +1,18 @@
-#! /usr/bin/env python2.7
+#! /usr/bin/env python3.6
 import rospy
+import sys
 from wifi_rssi_collection import collector
+from wifi_rssi_collection import utils 
 
 if __name__ == "__main__":
     rospy.init_node('rssi_collect_node')
-    print("Collection starts from now.")
-    rssi_collector = collector.Collector()
-    while not rospy.is_shutdown():
-        rospy.sleep(0.01)
+    try:
+        rssi_collector = collector.Collector()
+        if rospy.get_param(rospy.get_name() + "/simulation_mode", False):
+            thread = utils.startSimulator("dummy_odometry_topic")
+            
+        while not rospy.is_shutdown():
+            rospy.sleep(0.01)
+
+    except KeyboardInterrupt:
+        sys.exit()

@@ -2,9 +2,11 @@
 <launch>
     <!-- Arguments -->
     <arg name="data_folder" default="$(find wifi_rssi_collection)/data"/> <!-- The folder to save data to -->
-    <arg name="input_topic" default = "default_input"/> <!-- Input odometry topic -->
+    <arg name="input_topic" default = "dummy_odometry_topic"/> <!-- Input odometry topic -->
     <arg name="visualize_data" default="false"/> <!-- If visualize data while collecting -->
     <arg name="visualize_mode" default="false"/> <!-- Visualize collected data only -->
+    <arg name="simulation_mode" default="true"/> <!-- Generate dummy odometry data to simulate real situation -->
+    <arg name="pass_code" default="luxc1"/> <!-- Generate dummy odometry data to simulate real situation -->
 
     <!-- Start the node -->
     <node name="wifi_rssi_collection" pkg="wifi_rssi_collection" type="collect_node" output="screen" respawn="false">
@@ -12,6 +14,8 @@
         <param name="input_topic" value="$(arg input_topic)"/>
         <param name="visualize_data" value="$(arg visualize_data)"/>
         <param name="visualize_mode" value="$(arg visualize_mode)"/>
+        <param name="simulation_mode" value="$(arg simulation_mode)"/>
+        <param name="pass_code" value="$(arg pass_code)"/>
     </node>
     
     <!-- Visualization in rviz -->

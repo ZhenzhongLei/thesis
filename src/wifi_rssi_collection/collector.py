@@ -10,36 +10,40 @@ class Collector:
 
     # Input related items
     input_topic_ = "" 
-
+    pass_code_ = ""
     # Subscribers
-    object_info_subscriber_ = None  # ros subscriber
+    odometry_subscriber_ = None  # ros subscriber
 
-    # Data storage
+    # Data scanning and storage
     data_folder_ = None
 
     def __init__(self):
         """
         Initializer of the class:
             1. load parameters from ROS 
-            2. publish static transformation between camera frame and lidar frame (for KITTI dataset mainly)
             3. ...
         """
         # Load parameters
         self.loadParameters()
         
         # Initialize subscriber(s) and publisher(s)
-        self.object_info_subscriber_ = rospy.Subscriber(self.input_topic_, rospy.msg.AnyMsg, self.odometryCallBack)
-    
+        self.odometry_subscriber_ = rospy.Subscriber(self.input_topic_, Pose2D, self.odometryCallBack)
+
     def loadParameters(self):
         """
         Load parameters from ROS
         """
-        self.data_folder_ = rospy.get_param("/wifi_rssi_collection/data_folder", "~")
-        self.input_topic_ = rospy.get_param("/wifi_rssi_collection/input_topic", "default_topic")
-        self.visualize_data_ = rospy.get_param("/wifi_rssi_collection/visualize_data", False)
-        self.visaluze_mode_ = rospy.get_param("/wifi_rssi_collection/visaluze_mode", False)
-
+        ns = rospy.get_name()
+        self.data_folder_ = rospy.get_param(ns + "/data_folder", "~")
+        self.input_topic_ = rospy.get_param(ns + "/input_topic", "default_topic")
+        self.visualize_data_ = rospy.get_param(ns + "/visualize_data", False)
+        self.visaluze_mode_ = rospy.get_param(ns + "/visaluze_mode", False)
+        self.pass_code_ = rospy.get_param(ns + "/pass_code", "idk")
+    
     def odometryCallBack(self, message):
+        print("Data received")
+        data = getRawNetworkScan('wlp4s0', password= self.pass_code_, sudo=True)
+        print(data)
         return
 
     def __del__(self):
