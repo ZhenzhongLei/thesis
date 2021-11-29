@@ -1,4 +1,6 @@
 from wifi_rssi_collection.utils import *
+from wifi_rssi_collection.iwlist import *
+from wifi_rssi_collection.scapyRssi import *
 
 class Collector:
     '''
@@ -38,12 +40,13 @@ class Collector:
         self.input_topic_ = rospy.get_param(ns + "/input_topic", "default_topic")
         self.visualize_data_ = rospy.get_param(ns + "/visualize_data", False)
         self.visaluze_mode_ = rospy.get_param(ns + "/visaluze_mode", False)
-        self.pass_code_ = rospy.get_param(ns + "/pass_code", "idk")
+        self.pass_code_ = rospy.get_param(ns + "/pass_code", "default_code")
     
     def odometryCallBack(self, message):
         print("Data received")
         data = getRawNetworkScan('wlp4s0', password= self.pass_code_, sudo=True)
-        print(data)
+        APinfo = getAPinfo(data['output'].decode())
+        print(APinfo)
         return
 
     def __del__(self):

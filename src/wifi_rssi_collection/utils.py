@@ -1,10 +1,12 @@
 import os
 import sys
 import glob
+import rssi
 import rospy
 import time
 import threading
 import numpy as np, copy
+from scapy.all import sniff
 from rospy.msg import AnyMsg
 from subprocess import Popen, PIPE
 from geometry_msgs.msg import Pose2D
@@ -53,35 +55,17 @@ def isString(data):
     else:
         return True
 
-def getRawNetworkScan(interface, password = 'luxc1', sudo=False):
+def startSimulator(topic_name):
     """
-    Get raw network data by using iwlist command
+    launch the 
 
     Args:
-        interface: string, which is obtained from 
-        extension: string, file extension, "txt" is given by default
+        interface: string, which is obtained by using command "iwconfig" from command line
+        sudo: string, file extension, "txt" is given by default
 
     Returns:
-        the list of files with given extension, list of strings
-
-    Raises:
-        assertions if path is not of string type or the path couldn't be found
+        A dictionary with keys "output" and "error", which stores scanning result and error information respectively.
     """
-    # Scan command 'iwlist interface scan' needs to be fed as an array.
-    if sudo:
-        command = ['sudo', '-S', 'iwlist', interface,'scan'] # -S will make Python read password from standard input
-    else:
-        command = ['iwlist', interface,'scan']
-    # Open a subprocess running the scan command.
-    process = Popen(command, stdin=PIPE, stdout=PIPE, stderr=PIPE)
-    # Returns the 'success' and 'error' output.
-    (output, error) = process.communicate(input=str.encode(password + '\n')) 
-    # Block all execution, until the scanning completes.
-    process.wait()
-    # Returns all output in a dictionary for easy retrieval.
-    return {'output':output,'error':error}
-
-def startSimulator(topic_name): 
     thread = threading.Thread(target = odometrySimulator, args=[topic_name])
     thread.daemon = True
     thread.start()

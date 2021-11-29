@@ -51,7 +51,7 @@ As the package name suggets, this package is developed to source wifi data. Thre
 ## :sparkles: Features ##
 
 Feature 1: ROS support \
-Feature 2: rssi(based on iwlist) or scapy\
+Feature 2: iwlist or scapy \
 Feature 3: SQL data storage \
 Feature 4: Error Info Logging  
 
