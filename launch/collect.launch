@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <launch>
     <!-- Arguments -->
-    <arg name="data_folder" default="$(find wifi_rssi_collection)/data"/> <!-- The folder to save data to -->
+    <arg name="data_folder" default="$(find wifi_rssi_collection)/data/"/> <!-- The folder to save data to -->
     <arg name="input_topic" default = "dummy_odometry_topic"/> <!-- Input odometry topic -->
     <arg name="visualize_data" default="false"/> <!-- If visualize data while collecting -->
     <arg name="visualize_mode" default="false"/> <!-- Visualize collected data only -->

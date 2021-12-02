@@ -1,4 +1,5 @@
 from wifi_rssi_collection.utils import *
+
 def getAPinfo(output):
     """
     Extract AP info from network data 

@@ -1,6 +1,5 @@
 from wifi_rssi_collection.utils import *
 from wifi_rssi_collection.iwlist import *
-from wifi_rssi_collection.scapyRssi import *
 
 class Collector:
     '''
@@ -44,10 +43,58 @@ class Collector:
     
     def odometryCallBack(self, message):
         print("Data received")
+
+        # Get current date and time
+        date = datetime.datetime.now().strftime("%d-%m-%y")
+        time = datetime.datetime.now().strftime("%H-%M-%S")
+
+        # Check if relevant files exist
+        self.checkFiles(date)
+        x = message.x
+        y = message.y
+
+        # Retrieve AP info and rssi
         data = getRawNetworkScan('wlp4s0', password= self.pass_code_, sudo=True)
         APinfo = getAPinfo(data['output'].decode())
-        print(APinfo)
+        
+        # Save 
+        self.saveTimeStamp(time)
+        self.saveCoordinates(x ,y)
+        self.saveAPinfo(APinfo)
+        self.saveRssi(APinfo)
         return
+
+    def checkFiles(self, date):
+        directory = self.data_folder_ + date
+        if not os.path.isdir(directory):
+            os.mkdir(directory)
+        os.chdir(directory)
+        if not os.path.isfile("time.csv"):
+            with open('time.csv', 'w'): pass
+        if not os.path.isfile("coordinates.csv"):
+            with open('coordinates.csv', 'w'): pass
+        if not os.path.isfile("AP.csv"):
+            with open('AP.csv', 'w'): pass
+        if not os.path.isfile("rssi.csv"):
+            with open('rssi.csv', 'w'): pass
+
+    def saveTimeStamp(self, time):        
+        with open('time.csv','a') as fd:
+            fd.writelines(time + '\n')
+
+    def saveCoordinates(self, x, y):
+        with open('coordinates.csv','a') as fd:
+            fd.writelines("{:f} {:f}".format(x, y) + '\n')
+
+    def saveAPinfo(self, APinfo):
+        APs = extractData(APinfo, "ssid", delimiter=',    ')
+        with open('AP.csv','a') as fd:
+            fd.write(APs + '\n')
+
+    def saveRssi(self, APinfo):
+        rssi = extractData(APinfo, "signal")
+        with open('rssi.csv','a') as fd:
+            fd.writelines(rssi + '\n')
 
     def __del__(self):
         """
