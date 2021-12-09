@@ -8,18 +8,21 @@ def getAPinfo(output):
         output, string 
 
     Returns:
-        A list of dictionary objects with 3 fields: "ssid", "quality" and "signal"
+        A list of dictionary with 3 fields: "ssid", "quality" and "signal"
     """
     cells = output.split('Cell') # Divide raw string into raw cells.
     cells.pop(0) # Remove unneccesary "Scan Completed" message.
     if(len(cells) > 0): # Continue execution, if atleast one network is detected.
         def parseCell(cell):
-            dictionary = {
-                'ssid': getSSID(cell),
-                'quality': getQuality(cell),
-                'signal': getSignalLevel(cell)
-            }
-            return dictionary
+            ssid = getSSID(cell)
+            quality = getQuality(cell)
+            signal = getSignalLevel(cell)
+
+            if ssid == '':
+                AP = None
+            else:
+                AP = {'ssid': ssid, 'quality': quality, 'signal': signal}
+            return AP
         
         def getSSID(cell):
             ssid = cell.split('ESSID:"')[1]
@@ -36,7 +39,13 @@ def getAPinfo(output):
             signal = signal.split(' ')[0]
             return signal
 
-        APinfo = [parseCell(cell) for cell in cells]
+        APinfo = []
+        for cell in cells:
+            AP = parseCell(cell)
+            if AP is None:
+                pass
+            else:
+                APinfo.append(AP)
         return APinfo
     else:
         print("Networks not detected.")

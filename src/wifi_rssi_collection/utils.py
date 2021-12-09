@@ -3,11 +3,9 @@ import sys
 import glob
 import rospy
 import time
-import itertools
 import datetime
 import threading
 import numpy as np, copy
-from scapy.all import sniff
 from rospy.msg import AnyMsg
 from subprocess import Popen, PIPE
 from geometry_msgs.msg import Pose2D
@@ -15,6 +13,17 @@ from geometry_msgs.msg import Point
 from visualization_msgs.msg import Marker
 
 def extractData(dictionary_list, key, delimiter = ' '):
+    """
+    Extract wanted data from each dictionary into a string specified by given key and separated by given delimiter
+
+    Args:
+        dictionary_list: list of dictionary
+        key: the key corresponding to wanted data
+        delimiter: symbol, default to ' ', used to separate text 
+
+    Returns:
+        string, with wanted data separated by delimiter
+    """
     data = []
     for dictionary in dictionary_list:
         data.append(dictionary[key])
@@ -22,11 +31,10 @@ def extractData(dictionary_list, key, delimiter = ' '):
 
 def startSimulator(topic_name):
     """
-    launch the dummy odometry "simulator" in a separate thread
+    Launch the dummy odometry "simulator" in a separate thread
 
     Args:
         topic_name: the ros topic name to which the data is published
-
     """
     thread = threading.Thread(target = odometrySimulator, args=[topic_name])
     thread.daemon = True
@@ -35,11 +43,10 @@ def startSimulator(topic_name):
 
 def odometrySimulator(topic_name):
     """
-    launch the dummy odometry "simulator" in a separate thread
+    Launch the dummy odometry "simulator" in a separate thread
 
     Args:
         topic_name: the ros topic name to which the data is published
-
     """
     publisher = rospy.Publisher(topic_name, Pose2D, queue_size=10)
     while True:
