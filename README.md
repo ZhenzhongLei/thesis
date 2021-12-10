@@ -51,9 +51,8 @@ As the package name suggets, this package is developed to source wifi data. Thre
 ## :sparkles: Features ##
 
 Feature 1: ROS support \
-Feature 2: iwlist or scapy \
-Feature 3: SQL data storage \
-Feature 4: Error Info Logging  
+Feature 2: iwlist based \
+Feature 3: csv data storage   
 
 ## :rocket: Technologies ##
 
@@ -77,7 +76,7 @@ $ cd ~/catkin/src && git clone https://github.com/ZhenzhongLei/thesis.git
 $ cd ~/catkin && catkin_make
 
 # Install dependencies
-$ pip install numpy==1.19.2
+$ pip install -r requirement.txt
 $ ...
 
 # Run the project
@@ -88,8 +87,6 @@ $ roslaunch wifi_rssi_collection collect.launch
 ## :memo: License ##
 
 To-do
-
-## "memo" license ##
 
 Developed by <a href="leizhenzhong15@gmail.com" target="_blank">{zhenzhong lei}</a>
 &#xa0;
