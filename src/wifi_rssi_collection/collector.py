@@ -8,20 +8,28 @@ class Collector:
     # General
     visaluze_mode_ = False
     visualize_data_ = False
+    collect_option_ = False
 
     # Input related items
     input_topic_ = "" 
     pass_code_ = ""
+    parent_frame_ = ""
+    child_frame_ = ""
+
     # Subscribers
     odometry_subscriber_ = None  # ros subscriber
 
     # Data scanning and storage
     data_folder_ = None
+    tf_listener_ = None
 
     # Semaphore 
-    sem = threading.Semaphore(value=1)
-    x = 0
-    y = 0
+    sem_ = threading.Semaphore(value=1)
+
+    # Position data
+    x_ = 0
+    y_ = 0
+    theta_ = 0
 
     def __init__(self):
         """
@@ -33,8 +41,12 @@ class Collector:
         # Load parameters
         self.loadParameters()
         
+        # Initialize tf listener
+        self.tf_listener_ = tf.TransformListener()
+
         # Initialize subscriber(s) and publisher(s)
-        self.odometry_subscriber_ = rospy.Subscriber(self.input_topic_, Pose2D, self.odometryCallBack)
+        if self.collect_option_:
+            self.odometry_subscriber_ = rospy.Subscriber(self.input_topic_, Pose2D, self.odometryCallBack)
 
         # Launch collecting procedure in a separate thread
         thread = threading.Thread(target = self.collect, args=[])
@@ -47,11 +59,14 @@ class Collector:
         Load parameters from ROS
         """
         ns = rospy.get_name()
-        self.data_folder_ = rospy.get_param(ns + "/data_folder", "~")
-        self.input_topic_ = rospy.get_param(ns + "/input_topic", "default_topic")
         self.visualize_data_ = rospy.get_param(ns + "/visualize_data", False)
         self.visaluze_mode_ = rospy.get_param(ns + "/visaluze_mode", False)
+        self.collect_option_ = rospy.get_param(ns + "/collect_option", False)
+        self.data_folder_ = rospy.get_param(ns + "/data_folder", "~")
+        self.input_topic_ = rospy.get_param(ns + "/input_topic", "default_topic")
         self.pass_code_ = rospy.get_param(ns + "/pass_code", "default_code")
+        self.parent_frame_ = rospy.get_param(ns + "/parent_frame", "default_parent")
+        self.child_frame_ = rospy.get_param(ns + "/child_frame", "default_child")
     
     def odometryCallBack(self, message):
         """
@@ -60,10 +75,11 @@ class Collector:
         Args: 
             message: Pose2D type, the published 2D odometey data from localization node
         """
-        self.sem.acquire()
-        self.x = message.x
-        self.y = message.y
-        self.sem.release()
+        self.sem_.acquire()
+        self.x_ = message.x
+        self.y_ = message.y
+        self.theta_ = message.theta
+        self.sem_.release()
 
     def collect(self):
         """
@@ -85,15 +101,26 @@ class Collector:
             self.saveTimeStamp(time)
 
             # Save coordinates
-            self.sem.acquire()
-            self.saveCoordinates(self.x ,self.y)
-            self.sem.release()
+            self.sem_.acquire()
+            if self.collect_option_ == False:
+                self.retrievePose()
+            self.saveCoordinates(self.x_ ,self.y_, self.theta_)
+            self.sem_.release()
 
             # Save AP info and rssi
             self.saveAPinfo(APinfo)
             self.saveRssi(APinfo)
             print("Collect a new set of data!\n")
         return
+
+    def retrievePose(self):
+        try:
+            (trans,rot) = self.tf_listener_.lookupTransform(self.parent_frame_, self.child_frame_, rospy.Time(0))
+        except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
+            pass
+        self.x_ = trans[0]
+        self.y_ = trans[1]
+        self.theta_ = tf.transformations.euler_from_quaternion(rot)[2]
 
     def checkFiles(self, date):
         """
@@ -130,16 +157,17 @@ class Collector:
         with open('time.csv','a') as fd:
             fd.writelines(time + '\n')
 
-    def saveCoordinates(self, x, y):
+    def saveCoordinates(self, x, y, theta):
         """
         Save coordinates into "coordinates.csv"
 
         Args:
             x: float
             y: float
+            theta: float
         """   
         with open('coordinates.csv','a') as fd:
-            fd.writelines("{:f} {:f}".format(x, y) + '\n')
+            fd.writelines("{:f} {:f} {:f}".format(x, y, theta) + '\n')
 
     def saveAPinfo(self, APinfo):
         """

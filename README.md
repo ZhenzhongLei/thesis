@@ -57,7 +57,7 @@ Feature 3: csv data storage
 ## :rocket: Technologies ##
 
 The following tools were used in this project:
-
+- [Python 2](https://www.python.org/downloads/)
 - [Python 3](https://www.python.org/downloads/)
 - [ROS melodic](http://wiki.ros.org/melodic)
 

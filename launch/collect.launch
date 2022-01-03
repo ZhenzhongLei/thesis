@@ -1,12 +1,18 @@
 <?xml version="1.0"?>
 <launch>
-    <!-- Arguments -->
+    <!-- Arguments ~ input/output related-->
     <arg name="data_folder" default="$(find wifi_rssi_collection)/data/"/> <!-- The folder to save data to -->
     <arg name="input_topic" default = "dummy_odometry_topic"/> <!-- Input odometry topic -->
+    <arg name="parent_frame" default = "dummy_parent_frame"/> <!-- Parent frame of tf -->
+    <arg name="child_frame" default = "dummy_child_frame"/> <!-- Child frame of tf -->
+    <arg name="pass_code" default="luxc1"/> <!-- Pass code to permit scanning programs -->
+
+     <!-- Arguments -->
     <arg name="visualize_data" default="false"/> <!-- If visualize data while collecting -->
     <arg name="visualize_mode" default="false"/> <!-- Visualize collected data only -->
-    <arg name="simulation_mode" default="true"/> <!-- Generate dummy odometry data to simulate real situation -->
-    <arg name="pass_code" default="luxc1"/> <!-- Generate dummy odometry data to simulate real situation -->
+    <arg name="simulation_mode" default="true"/> <!-- Generate dummy tf data to simulate real situation -->
+    <arg name="simulation_option" default="false"/> <!-- True for publishing dummy pose messages and False for publishing dummy tf messages -->
+    <arg name="collect_option" default="false"/> <!-- True to subscribe for odometry data, false to retrieve postion from tf -->
 
     <!-- Start the node -->
     <node name="wifi_rssi_collection" pkg="wifi_rssi_collection" type="collect_node" output="screen" respawn="false">
@@ -15,7 +21,11 @@
         <param name="visualize_data" value="$(arg visualize_data)"/>
         <param name="visualize_mode" value="$(arg visualize_mode)"/>
         <param name="simulation_mode" value="$(arg simulation_mode)"/>
+        <param name="simulation_option" value="$(arg simulation_option)"/>
+        <param name="collect_option" value="$(arg collect_option)"/>
         <param name="pass_code" value="$(arg pass_code)"/>
+        <param name="parent_frame" value="$(arg parent_frame)"/>
+        <param name="child_frame" value="$(arg child_frame)"/>
     </node>
     
     <!-- Visualization in rviz -->
