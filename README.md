@@ -52,7 +52,8 @@ As the package name suggets, this package is developed to source wifi data. Thre
 
 Feature 1: ROS support \
 Feature 2: iwlist based \
-Feature 3: csv data storage   
+Feature 3: csv data storage \
+Feature 4: simple data visualization
 
 ## :rocket: Technologies ##
 

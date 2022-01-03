@@ -3,11 +3,13 @@ import sys
 import glob
 import rospy
 import time
+import csv
 import tf2_ros
 import tf
 import datetime
 import threading
 import numpy as np, copy
+import matplotlib.pyplot as plt
 from rospy.msg import AnyMsg
 from subprocess import Popen, PIPE
 from geometry_msgs.msg import Pose2D
@@ -56,7 +58,7 @@ def odometrySimulator(topic_name):
     Launch the dummy odometry "simulator" which publishes (x, y, theta)
 
     Args:
-        topic_name: the ros topic name to which the data is published
+        topic_name: string, the ros topic name to which the data is published
     """
     publisher = rospy.Publisher(topic_name, Pose2D, queue_size=10)
     while True:
@@ -74,8 +76,8 @@ def transformSimulator(parent_frame, child_frame):
     Launch the dummy transform "simulator" which only publishes random (x, y) coordinates
 
     Args:
-        parent_frame: name of the parent frame
-        child_frame: name of the child frame
+        parent_frame: string, the parent frame
+        child_frame: string, the child frame
     """
     br = tf.TransformBroadcaster()
 
@@ -88,3 +90,43 @@ def transformSimulator(parent_frame, child_frame):
             rospy.Time.now(),
             child_frame,
             parent_frame)
+
+def appenToFile(file, data):
+    """
+    Append a line of data to the specified file
+
+    Args:
+        file: string, name of the specified file
+        data: string, the data to be appended
+    """
+    with open(file,'a') as f:
+        f.writelines(data + '\n')
+
+def readNumericData(file):
+    """
+    Read the numerical data from a csv file
+
+    Args:
+        file: string, name of the csv file which stores numerical data
+    """
+    if file.split('.')[1] != 'csv':
+        return None
+    f = open(file)
+    reader = csv.reader(f, quoting = csv.QUOTE_NONNUMERIC, delimiter = ' ')
+    data = []
+    for row in reader:
+        data.append(row[:])
+    return data
+
+def drawDistribution(poses):
+    """
+    Plot the coordinates data to visualize its distribution
+
+    Args:
+        file: string, name of the csv file which stores numerical data
+    """
+    poses = np.array(poses)
+    xpoints = poses[:, 0]
+    ypoints = poses[:, 1]
+    plt.plot(xpoints, ypoints, 'o')
+    plt.show()

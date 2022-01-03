@@ -8,18 +8,18 @@
     <arg name="pass_code" default="luxc1"/> <!-- Pass code to permit scanning programs -->
 
      <!-- Arguments -->
-    <arg name="visualize_data" default="false"/> <!-- If visualize data while collecting -->
-    <arg name="visualize_mode" default="false"/> <!-- Visualize collected data only -->
+    <arg name="visualize_data" default="true"/> <!-- If visualize the collected data -->
+    <arg name="visualize_folder" default="03-01-22"/> <!-- Under which subfolder the data should be displayed -->
     <arg name="simulation_mode" default="true"/> <!-- Generate dummy tf data to simulate real situation -->
     <arg name="simulation_option" default="false"/> <!-- True for publishing dummy pose messages and False for publishing dummy tf messages -->
     <arg name="collect_option" default="false"/> <!-- True to subscribe for odometry data, false to retrieve postion from tf -->
-
+    
     <!-- Start the node -->
     <node name="wifi_rssi_collection" pkg="wifi_rssi_collection" type="collect_node" output="screen" respawn="false">
         <param name="data_folder" value="$(arg data_folder)"/>
         <param name="input_topic" value="$(arg input_topic)"/>
         <param name="visualize_data" value="$(arg visualize_data)"/>
-        <param name="visualize_mode" value="$(arg visualize_mode)"/>
+        <param name="visualize_folder" value="$(arg visualize_folder)"/>
         <param name="simulation_mode" value="$(arg simulation_mode)"/>
         <param name="simulation_option" value="$(arg simulation_option)"/>
         <param name="collect_option" value="$(arg collect_option)"/>

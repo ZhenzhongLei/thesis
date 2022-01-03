@@ -6,7 +6,6 @@ class Collector:
     Be aware that in Python, members defined under class are actually shared by all instances.
     '''
     # General
-    visaluze_mode_ = False
     visualize_data_ = False
     collect_option_ = False
 
@@ -21,6 +20,7 @@ class Collector:
 
     # Data scanning and storage
     data_folder_ = None
+    visaluze_folder_ = False
     tf_listener_ = None
 
     # Semaphore 
@@ -41,6 +41,10 @@ class Collector:
         # Load parameters
         self.loadParameters()
         
+        # Visualize data
+        if self.visualize_data_:
+            self.visualizeData()
+
         # Initialize tf listener
         self.tf_listener_ = tf.TransformListener()
 
@@ -60,13 +64,13 @@ class Collector:
         """
         ns = rospy.get_name()
         self.visualize_data_ = rospy.get_param(ns + "/visualize_data", False)
-        self.visaluze_mode_ = rospy.get_param(ns + "/visaluze_mode", False)
         self.collect_option_ = rospy.get_param(ns + "/collect_option", False)
         self.data_folder_ = rospy.get_param(ns + "/data_folder", "~")
+        self.visaluze_folder_ = rospy.get_param(ns + "/visualize_folder", "xx-xx-xx")
         self.input_topic_ = rospy.get_param(ns + "/input_topic", "default_topic")
-        self.pass_code_ = rospy.get_param(ns + "/pass_code", "default_code")
         self.parent_frame_ = rospy.get_param(ns + "/parent_frame", "default_parent")
         self.child_frame_ = rospy.get_param(ns + "/child_frame", "default_child")
+        self.pass_code_ = rospy.get_param(ns + "/pass_code", "default_code")
     
     def odometryCallBack(self, message):
         """
@@ -113,7 +117,25 @@ class Collector:
             print("Collect a new set of data!\n")
         return
 
+    def visualizeData(self):
+        """
+        Visualize the collected data based on provided parameters
+        """
+        # Enter the data folder
+        data_folder = self.data_folder_ + self.visaluze_folder_
+        if os.path.isdir(data_folder):
+            os.chdir(data_folder)
+            data = readNumericData("coordinates.csv")
+            drawDistribution(data)
+        else:
+            print("The directory doesn't exist")
+        sys.exit()
+
+
     def retrievePose(self):
+        """
+        Retrieve robot pose from tf
+        """
         try:
             (trans,rot) = self.tf_listener_.lookupTransform(self.parent_frame_, self.child_frame_, rospy.Time(0))
         except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
@@ -153,9 +175,8 @@ class Collector:
 
         Args:
             time: string
-        """        
-        with open('time.csv','a') as fd:
-            fd.writelines(time + '\n')
+        """
+        appenToFile('time.csv', time)
 
     def saveCoordinates(self, x, y, theta):
         """
@@ -165,9 +186,8 @@ class Collector:
             x: float
             y: float
             theta: float
-        """   
-        with open('coordinates.csv','a') as fd:
-            fd.writelines("{:f} {:f} {:f}".format(x, y, theta) + '\n')
+        """
+        appenToFile('coordinates.csv', "{:f} {:f} {:f}".format(x, y, theta))
 
     def saveAPinfo(self, APinfo):
         """
@@ -176,9 +196,8 @@ class Collector:
         Args:
             APinfo: list of dictionary, returned from scanning service
         """   
-        APs = extractData(APinfo, "ssid", delimiter=',    ')
-        with open('AP.csv','a') as fd:
-            fd.write(APs + '\n')
+        APs = extractData(APinfo, "ssid", delimiter=',\t')
+        appenToFile('AP.csv', APs)
 
     def saveRssi(self, APinfo):
         """
@@ -188,8 +207,7 @@ class Collector:
             APinfo: list of dictionary, returned from scanning service
         """   
         rssi = extractData(APinfo, "signal")
-        with open('rssi.csv','a') as fd:
-            fd.writelines(rssi + '\n')
+        appenToFile('rssi.csv', rssi)
 
     def __del__(self):
         """
