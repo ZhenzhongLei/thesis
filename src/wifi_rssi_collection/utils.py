@@ -8,8 +8,10 @@ import tf2_ros
 import tf
 import datetime
 import threading
+import multiprocessing
 import numpy as np, copy
 import matplotlib.pyplot as plt
+from functools import reduce
 from rospy.msg import AnyMsg
 from subprocess import Popen, PIPE
 from geometry_msgs.msg import Pose2D
@@ -91,7 +93,7 @@ def transformSimulator(parent_frame, child_frame):
             child_frame,
             parent_frame)
 
-def appenToFile(file, data):
+def appendToFile(file, data):
     """
     Append a line of data to the specified file
 

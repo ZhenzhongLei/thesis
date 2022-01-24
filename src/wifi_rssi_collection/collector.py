@@ -1,5 +1,5 @@
 from wifi_rssi_collection.utils import *
-from wifi_rssi_collection.iwlist import *
+from wifi_rssi_collection.scan import *
 
 class Collector:
     '''
@@ -35,20 +35,21 @@ class Collector:
         """
         Initializer of the class:
             1. load parameters from ROS 
-            2. initialize subscribers and publishers
-            3. launch collecting procedure in a separate thread
+            2. initialize subscriber(s)/publisher(s)
+            3. visualize the collected data as specified (will force the program to end)
+            4. launch collecting procedure in a separate thread
         """
         # Load parameters
         self.loadParameters()
         
-        # Visualize data
+        # Visualize data 
         if self.visualize_data_:
             self.visualizeData()
 
         # Initialize tf listener
         self.tf_listener_ = tf.TransformListener()
 
-        # Initialize subscriber(s) and publisher(s)
+        # Initialize subscriber(s)/publisher(s)
         if self.collect_option_:
             self.odometry_subscriber_ = rospy.Subscriber(self.input_topic_, Pose2D, self.odometryCallBack)
 
@@ -56,7 +57,6 @@ class Collector:
         thread = threading.Thread(target = self.collect, args=[])
         thread.daemon = True
         thread.start()
-
 
     def loadParameters(self):
         """
@@ -89,32 +89,36 @@ class Collector:
         """
         Collet data, when scanning finishes, the latest available odometry data will be used
         """
-        while True:
-            # Retrieve AP info and rssi
-            data = getRawNetworkScan('wlp4s0', password= self.pass_code_, sudo=True)
-            APinfo = getAPinfo(data['output'].decode())
-            
-            # Get current date and time
-            date = datetime.datetime.now().strftime("%d-%m-%y")
-            time = datetime.datetime.now().strftime("%H-%M-%S")
+        if False:
+            while True:
+                # Retrieve AP info and rssi
+                data = getRawNetworkScan('wlp4s0', password= self.pass_code_, sudo=True)
+                APinfo = getAPinfo(data['output'].decode())
+                
+                # Get current date and time
+                date = datetime.datetime.now().strftime("%d-%m-%y")
+                time = datetime.datetime.now().strftime("%H-%M-%S")
 
-            # Check if relevant files exist
-            self.checkFiles(date)
+                # Check if relevant files exist
+                self.checkFiles(date)
 
-            # Save time 
-            self.saveTimeStamp(time)
+                # Save time 
+                self.saveTimeStamp(time)
 
-            # Save coordinates
-            self.sem_.acquire()
-            if self.collect_option_ == False:
-                self.retrievePose()
-            self.saveCoordinates(self.x_ ,self.y_, self.theta_)
-            self.sem_.release()
+                # Save coordinates
+                self.sem_.acquire()
+                if self.collect_option_ == False:
+                    self.retrievePose()
+                self.saveCoordinates(self.x_ ,self.y_, self.theta_)
+                self.sem_.release()
 
-            # Save AP info and rssi
-            self.saveAPinfo(APinfo)
-            self.saveRssi(APinfo)
-            print("Collect a new set of data!\n")
+                # Save AP info and rssi
+                self.saveAPinfo(APinfo)
+                self.saveRssi(APinfo)
+                print("Collect a new set of data!\n")
+        else:
+            channels = [1,2,3,4,5,6,7,8,9,10]
+            getAPdata('wlp4s0', self.pass_code_, channels, 0.1)
         return
 
     def visualizeData(self):
@@ -176,7 +180,7 @@ class Collector:
         Args:
             time: string
         """
-        appenToFile('time.csv', time)
+        appendToFile('time.csv', time)
 
     def saveCoordinates(self, x, y, theta):
         """
@@ -187,7 +191,7 @@ class Collector:
             y: float
             theta: float
         """
-        appenToFile('coordinates.csv', "{:f} {:f} {:f}".format(x, y, theta))
+        appendToFile('coordinates.csv', "{:f} {:f} {:f}".format(x, y, theta))
 
     def saveAPinfo(self, APinfo):
         """
@@ -197,7 +201,7 @@ class Collector:
             APinfo: list of dictionary, returned from scanning service
         """   
         APs = extractData(APinfo, "ssid", delimiter=',\t')
-        appenToFile('AP.csv', APs)
+        appendToFile('AP.csv', APs)
 
     def saveRssi(self, APinfo):
         """
@@ -207,7 +211,7 @@ class Collector:
             APinfo: list of dictionary, returned from scanning service
         """   
         rssi = extractData(APinfo, "signal")
-        appenToFile('rssi.csv', rssi)
+        appendToFile('rssi.csv', rssi)
 
     def __del__(self):
         """
