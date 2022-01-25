@@ -1,8 +1,8 @@
 #! /usr/bin/env python2.7
 import rospy
 import sys
-from wifi_rssi_collection import collector
-from wifi_rssi_collection import utils 
+from wifi_localization import collector
+from wifi_localization import utils 
 
 if __name__ == "__main__":
     rospy.init_node('rssi_collect_node')

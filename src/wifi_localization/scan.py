@@ -1,4 +1,4 @@
-from wifi_rssi_collection.utils import *
+from wifi_localization.utils import *
 
 def getAPinfo(output):
     """

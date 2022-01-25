@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <launch>
     <!-- Arguments ~ input/output related-->
-    <arg name="data_folder" default="$(find wifi_rssi_collection)/data/"/> <!-- The folder to save data to -->
+    <arg name="data_folder" default="$(find wifi_localization)/data/"/> <!-- The folder to save data to -->
     <arg name="input_topic" default = "dummy_odometry_topic"/> <!-- Input odometry topic -->
     <arg name="parent_frame" default = "dummy_parent_frame"/> <!-- Parent frame of tf -->
     <arg name="child_frame" default = "dummy_child_frame"/> <!-- Child frame of tf -->
@@ -16,7 +16,7 @@
     <arg name="collect_option" default="false"/> <!-- True to subscribe for odometry data, false to retrieve postion from tf -->
     
     <!-- Start the node -->
-    <node name="wifi_rssi_collection" pkg="wifi_rssi_collection" type="collect_node" output="screen" respawn="false">
+    <node name="wifi_localization" pkg="wifi_localization" type="collect_node" output="screen" respawn="false">
         <param name="data_folder" value="$(arg data_folder)"/>
         <param name="input_topic" value="$(arg input_topic)"/>
         <param name="visualize_data" value="$(arg visualize_data)"/>
@@ -33,6 +33,6 @@
     <!-- Visualization in rviz -->
     <arg name="rviz" default="false" />
     <group if="$(arg rviz)">
-        <node launch-prefix="nice" pkg="rviz" type="rviz" name="rviz" args="-d $(find wifi_rssi_collection)/rviz/visualize.rviz" />
+        <node launch-prefix="nice" pkg="rviz" type="rviz" name="rviz" args="-d $(find wifi_localization)/rviz/visualize.rviz" />
     </group>
 </launch>

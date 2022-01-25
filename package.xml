@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>wifi_rssi_collection</name>
+  <name>wifi_localization</name>
   <version>0.0.1</version>
   <description>The project is designed to collect wifi rssi values to generate fingerprint map from mobile robot platform</description>
   <maintainer email="leizhenzhong15@gmail.com">zhenzhong</maintainer>

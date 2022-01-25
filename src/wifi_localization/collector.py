@@ -1,5 +1,5 @@
-from wifi_rssi_collection.utils import *
-from wifi_rssi_collection.scan import *
+from wifi_localization.utils import *
+from wifi_localization.scan import *
 
 class Collector:
     '''

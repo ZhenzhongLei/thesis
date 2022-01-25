@@ -6,7 +6,10 @@ import time
 import csv
 import tf2_ros
 import tf
+import GPy
 import datetime
+import scipy.stats
+import scipy.optimize
 import threading
 import multiprocessing
 import numpy as np, copy
