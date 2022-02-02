@@ -1,4 +1,4 @@
-#! /usr/bin/env python2.7
+#! /usr/bin/env python3.6
 import rospy
 import sys
 from wifi_localization import collector

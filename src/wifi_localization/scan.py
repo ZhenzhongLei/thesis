@@ -1,6 +1,22 @@
 from wifi_localization.utils import *
 
-def getAPinfo(output):
+def getScanIwlist(interface, password = 'luxc1'):
+    """
+    Get raw network data by using iwlist
+
+    Args:
+        interface: string, the network interface 
+        password: the pass code used to enable sudo
+
+    Returns:
+        A list of dictionary with 3 fields: "ssid", "quality" and "signal"
+    """
+    
+    command = "sudo -S iwlist {} scan".format(interface)
+    process = runSudoCommand(command.split(), password)
+    return {'output':process.stdout.read(),'error':process.stderr.read()}
+
+def processIwlistReturn(output):
     """
     Extract AP info from iwlist output
 
@@ -50,31 +66,47 @@ def getAPinfo(output):
     else:
         print("Networks not detected.")
         return None
-
-
-def getRawNetworkScan(interface, password = 'luxc1', sudo = False):
+    
+def getScanWpa(interface, password = 'luxc1'):
     """
-    Get raw network data by using iwlist command
+    Get raw network data by using wpa_supplicant service
 
     Args:
-        interface: string, the network interface which is obtained by using command "iwconfig" from command line
-        sudo: if enabled, the scanning will cover wireless networks among the area
+        interface: string, the network interface 
+        password: the pass code used to enable sudo
 
     Returns:
         A dictionary with keys "output" and "error", which stores scanning result and error information respectively.
     """
-    # Scan command 'iwlist interface scan' needs to be fed as an array.
-    if sudo:
-        command = ['sudo', '-S', 'iwlist', interface,'scan'] # -S will make Python read password from standard input
-    else:
-        command = ['iwlist', interface,'scan']
-
-    process, output, error = runSudoCommand(command, password)
-    # Block all execution, until the scanning completes.
-    process.wait()
-    # Returns all output in a dictionary for easy retrieval.
+    command = "sudo -S wpa_cli -i {} scan".format(interface)
+    runSudoCommand(command.split(), password)
+    command = "sudo -S wpa_cli -i {} scan_results".format(interface)
+    process = runSudoCommand(command.split(), password)
     return {'output':process.stdout.read(),'error':process.stderr.read()}
+    
+def processWpaReturn(output):
+    """
+    Extract AP info from wpa_supplicant output
 
+    Args:
+        output, string by bytes 
+
+    Returns:
+        A list of dictionary with 3 fields: "ssid", "quality" and "signal"
+    """
+    lines = output.split('\n')
+    length = len(lines)
+    AP_info = []
+    for i in range(1, length):
+        fields = lines[i].split('\t')
+        if len(fields) < 5:
+            continue
+        bssid = fields[0]
+        signal = fields[2]
+        ssid = fields[-1]
+        AP = {'bssid': bssid, 'signal': signal, 'ssid': ssid}
+        AP_info.append(AP)
+    return AP_info
 
 def runSudoCommand(command, password, input=PIPE, output=PIPE, err=PIPE, verbose=True):
     """
@@ -93,12 +125,12 @@ def runSudoCommand(command, password, input=PIPE, output=PIPE, err=PIPE, verbose
         print(reduce(lambda x, y: x + ' ' + y, command))
     # Open a subprocess running the scan command.
     process = Popen(command, stdin=input, stdout=output, stderr=err)
-    # Returns the 'success' and 'error' output.
-    process.communicate(input=str.encode(password + '\n')) # input has to be byte type
+    # Input password
+    process._stdin_write(input=str.encode(password + '\n')) # Method communicate will block the execution.
     return process
 
 
-def getAPdata(interface, password, channels, interval = 0.1):
+def sniffAPdata(interface, password, channels, interval = 0.1):
     """
     Get AP and RSSI data by having sniffer sniffing packets from given interface
 
@@ -111,54 +143,55 @@ def getAPdata(interface, password, channels, interval = 0.1):
         process object
     """
     def configureMonitorMode(interface):
-        print("The mode swithcing process runs at " + str(os.getpid()))
-        # Turn network manager off
-        runSudoCommand(['sudo', '-S', 'service', 'network-manager', 'stop'], password).wait()
-        # Turn interface off
-        runSudoCommand(['sudo', '-S', 'ifconfig', interface, 'down'], password).wait()
-        # Change to monitor mode
-        runSudoCommand(['sudo','-S','iwconfig', interface,'mode', 'monitor'], password).wait()
-        # Turn interface on
-        runSudoCommand(['sudo', '-S', 'ifconfig', interface, 'up'], password).wait()
+        """
+        Set the specified wifi interface to monitor mode
+        """
+        runSudoCommand(['sudo', '-S', 'airmon-ng', 'check', 'kill'], password).wait()
+        runSudoCommand(['sudo', '-S', 'airmon-ng', 'start', interface], password).wait()
+        # runSudoCommand(['sudo', '-S', 'service', 'network-manager', 'stop'], password).wait()
+        # runSudoCommand(['sudo', '-S', 'ifconfig', interface, 'down'], password).wait()
+        # runSudoCommand(['sudo','-S','iwconfig', interface,'mode', 'monitor'], password).wait()
+        # runSudoCommand(['sudo', '-S', 'ifconfig', interface, 'up'], password).wait()
 
     def hooping(interface, channels, interval = 0.1):
-        global state
-        print("The hopping process runs at " + str(os.getpid()))
+        """
+        Change the wifi channel (to receive packets from different frequencies)
+        """
         while True: 
             for channel in channels:
-                runSudoCommand(['sudo', '-S', 'iwconfig', interface, 'channel', str(channel)], password).wait()
+                runSudoCommand(['sudo', '-S', 'iwconfig', interface, 'channel', str(channel)], password, verbose=False).wait()
                 time.sleep(interval) 
 
     def filterOutput(input):
         print("The filtering process runs at " + str(os.getpid()))
+        encoding = 'utf-8'
         while True:
             line = input.readline()
-            signal_pos  = line.find('signal')
-            bssid_pos   = line.find('BSSID')
-            channel_pos = line.find('MHz')
+            signal_pos  = line.find(str.encode('signal'))
+            essid_pos   = line.find(str.encode('Beacon'))
+            channel_pos = line.find(str.encode('CH:'))
             
-            if (signal_pos != -1) and (bssid_pos != -1) and (channel_pos != -1):            
-                dB = line[:signal_pos].split()[-1][:-2]  # db is block before 'signal' [:-2] so dB is not printed
-                channel = line[:channel_pos].split()[-1] #channel is the block before 'MHz'
-                BSSID = line[bssid_pos:].split()[0][6:] # BSSID: begins with 'BSSID' [6:] so BSSID is not printed
-                #print(str(dB)+' '+str(BSSID)+' '+str(channel), file=sys.stdout)
+            if (signal_pos != -1) and (essid_pos != -1) and (channel_pos != -1):            
+                dB = line[:signal_pos].split()[-1]  # db is block before 'signal' [:-2] so dB is not printed
+                essid = line[essid_pos:].split()[1][1:-1] # BSSID: begins with 'BSSID' [6:] so BSSID is not printed
+                channel = line[channel_pos:].split()[1] #channel is the block before 'MHz'
+                print(dB.decode(encoding) + ' ' +  essid.decode(encoding) + ' '+ channel.decode(encoding))
                 #sys.stdout.flush()
 
     # Configure interface to monitor mode
     configureMonitorMode(interface)
 
     # Have network 
+    interface = interface + 'mon'
     thread = threading.Thread(target = hooping, args=[interface, channels, interval])
     thread.daemon = True
     thread.start()
     
     # Receive packets 
-    time.sleep(0.1)
-    
     command = 'sudo -S tcpdump -npeqi {} -f type mgt subtype beacon'.format(interface)
     sniffing_process = runSudoCommand(command.split(), password)
     sniffing_output = sniffing_process.stdout
-    
+
     # Extract RSSI and APs 
     thread = threading.Thread(target = filterOutput, args=[sniffing_output])
     thread.daemon = True

@@ -4,8 +4,8 @@ import glob
 import rospy
 import time
 import csv
-import tf2_ros
-import tf
+# import tf2_ros
+# import tf
 import GPy
 import datetime
 import scipy.stats
@@ -13,8 +13,8 @@ import scipy.optimize
 import threading
 import multiprocessing
 import numpy as np, copy
-import matplotlib.pyplot as plt
 from functools import reduce
+import matplotlib.pyplot as plt
 from rospy.msg import AnyMsg
 from subprocess import Popen, PIPE
 from geometry_msgs.msg import Pose2D
@@ -53,7 +53,8 @@ def startSimulator(parameter, option):
     if option:
         thread = threading.Thread(target = odometrySimulator, args=parameter)
     else:
-        thread = threading.Thread(target = transformSimulator, args=parameter)
+        pass
+        thread = threading.Thread(target = None, args=parameter) # transformSimulator
     thread.daemon = True
     thread.start()
     return thread
@@ -76,25 +77,25 @@ def odometrySimulator(topic_name):
         time.sleep(0.1 + uncertainty)
     return
 
-def transformSimulator(parent_frame, child_frame):
-    """
-    Launch the dummy transform "simulator" which only publishes random (x, y) coordinates
+# def transformSimulator(parent_frame, child_frame):
+#     """
+#     Launch the dummy transform "simulator" which only publishes random (x, y) coordinates
 
-    Args:
-        parent_frame: string, the parent frame
-        child_frame: string, the child frame
-    """
-    br = tf.TransformBroadcaster()
+#     Args:
+#         parent_frame: string, the parent frame
+#         child_frame: string, the child frame
+#     """
+#     br = tf.TransformBroadcaster()
 
-    while True:
-        x = np.random.uniform(0, 10)
-        y = np.random.uniform(0, 10)
-        theta = np.random.uniform(-np.pi, np.pi)
-        br.sendTransform((x, y, 0),
-            tf.transformations.quaternion_from_euler(0, 0, theta),
-            rospy.Time.now(),
-            child_frame,
-            parent_frame)
+#     while True:
+#         x = np.random.uniform(0, 10)
+#         y = np.random.uniform(0, 10)
+#         theta = np.random.uniform(-np.pi, np.pi)
+#         br.sendTransform((x, y, 0),
+#             tf.transformations.quaternion_from_euler(0, 0, theta),
+#             rospy.Time.now(),
+#             child_frame,
+#             parent_frame)
 
 def appendToFile(file, data):
     """

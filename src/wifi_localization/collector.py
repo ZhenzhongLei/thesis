@@ -47,7 +47,7 @@ class Collector:
             self.visualizeData()
 
         # Initialize tf listener
-        self.tf_listener_ = tf.TransformListener()
+        # self.tf_listener_ = tf.TransformListener()
 
         # Initialize subscriber(s)/publisher(s)
         if self.collect_option_:
@@ -89,21 +89,24 @@ class Collector:
         """
         Collet data, when scanning finishes, the latest available odometry data will be used
         """
-        if False:
+        if True:
             while True:
                 # Retrieve AP info and rssi
-                data = getRawNetworkScan('wlp4s0', password= self.pass_code_, sudo=True)
-                APinfo = getAPinfo(data['output'].decode())
-                
+                start = time.time()
+                data = getScanWpa('wlp4s0', password= self.pass_code_)
+                APinfo = processWpaReturn(data['output'].decode())
+                end = time.time()
+                print(end - start)
+
                 # Get current date and time
                 date = datetime.datetime.now().strftime("%d-%m-%y")
-                time = datetime.datetime.now().strftime("%H-%M-%S")
+                moment = datetime.datetime.now().strftime("%H-%M-%S")
 
                 # Check if relevant files exist
                 self.checkFiles(date)
 
                 # Save time 
-                self.saveTimeStamp(time)
+                self.saveTimeStamp(moment)
 
                 # Save coordinates
                 self.sem_.acquire()
@@ -118,7 +121,7 @@ class Collector:
                 print("Collect a new set of data!\n")
         else:
             channels = [1,2,3,4,5,6,7,8,9,10]
-            getAPdata('wlp4s0', self.pass_code_, channels, 0.1)
+            sniffAPdata('wlp4s0', self.pass_code_, channels, 0.1)
         return
 
     def visualizeData(self):
@@ -140,13 +143,13 @@ class Collector:
         """
         Retrieve robot pose from tf
         """
-        try:
-            (trans,rot) = self.tf_listener_.lookupTransform(self.parent_frame_, self.child_frame_, rospy.Time(0))
-        except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
-            pass
-        self.x_ = trans[0]
-        self.y_ = trans[1]
-        self.theta_ = tf.transformations.euler_from_quaternion(rot)[2]
+        # try:
+        #     (trans,rot) = self.tf_listener_.lookupTransform(self.parent_frame_, self.child_frame_, rospy.Time(0))
+        # except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
+        #     pass
+        # self.x_ = trans[0]
+        # self.y_ = trans[1]
+        # self.theta_ = tf.transformations.euler_from_quaternion(rot)[2]
 
     def checkFiles(self, date):
         """

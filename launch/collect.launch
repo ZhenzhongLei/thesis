@@ -6,14 +6,16 @@
     <arg name="parent_frame" default = "dummy_parent_frame"/> <!-- Parent frame of tf -->
     <arg name="child_frame" default = "dummy_child_frame"/> <!-- Child frame of tf -->
     <arg name="interface" default = "wlp4s0"/> <!-- Child frame of tf -->
-    <arg name="pass_code" default="luxc1"/> <!-- Pass code to permit scanning programs -->
+    <arg name="pass_code" default="128ve9800"/> <!-- Pass code to permit scanning programs -->
 
-     <!-- Arguments -->
+    <!-- Arguments -->
     <arg name="visualize_data" default="false"/> <!-- If visualize the collected data -->
     <arg name="visualize_folder" default="03-01-22"/> <!-- Under which subfolder the data should be displayed -->
     <arg name="simulation_mode" default="true"/> <!-- Generate dummy tf data to simulate real situation -->
-    <arg name="simulation_option" default="false"/> <!-- True for publishing dummy pose messages and False for publishing dummy tf messages -->
-    <arg name="collect_option" default="false"/> <!-- True to subscribe for odometry data, false to retrieve postion from tf -->
+
+    <!-- The following should be set simultaneously -->
+    <arg name="simulation_option" default="true"/> <!-- True for publishing dummy pose messages and False for publishing dummy tf messages -->
+    <arg name="collect_option" default="true"/> <!-- True to subscribe for odometry data, false to retrieve postion from tf -->
     
     <!-- Start the node -->
     <node name="wifi_localization" pkg="wifi_localization" type="collect_node" output="screen" respawn="false">
