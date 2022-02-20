@@ -47,7 +47,10 @@
 ## :dart: About ##
 
 As the package name suggets, this package is developed to source wifi data. Three different methods for sourcing data are provided under this package.
-
+Nodes are running in different Python verision:
+  Python 2.7: receiver(due to subprocess), service(due to tf)
+  Python 3.6: simulator, collector, process, localizer
+  
 ## :sparkles: Features ##
 
 Feature 1: ROS support \

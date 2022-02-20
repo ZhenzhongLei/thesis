@@ -1,0 +1,2 @@
+collector:
+  input_topic: "rss_data_topic"

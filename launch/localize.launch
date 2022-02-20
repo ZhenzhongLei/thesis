@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<launch>
+    <!-- YAMLs -->
+    <rosparam command="load" file="$(find wifi_localization)/config/service.yaml" />
+    <rosparam command="load" file="$(find wifi_localization)/config/simulator.yaml" />
+    <rosparam command="load" file="$(find wifi_localization)/config/receiver.yaml" />
+    <rosparam command="load" file="$(find wifi_localization)/config/localizer.yaml" />
+
+    <!-- Start the node -->
+    <node name="service" pkg="wifi_localization" type="service" output="screen" respawn="false"/>
+
+    <node name="simulator" pkg="wifi_localization" type="simulator" output="screen" respawn="false"/>
+
+    <node name="receiver" pkg="wifi_localization" type="receiver" output="screen" respawn="false"/>
+
+    <node name="localizer" pkg="wifi_localization" type="localizer" output="screen" respawn="false">
+        <param name="model_folder" value="$(find wifi_localization)/model/"/>
+    </node>
+
+    <!-- Visualization in rviz -->
+    <arg name="rviz" default="false" />
+    <group if="$(arg rviz)">
+        <node launch-prefix="nice" pkg="rviz" type="rviz" name="rviz" args="-d $(find wifi_localization)/rviz/visualize.rviz" />
+    </group>
+</launch>

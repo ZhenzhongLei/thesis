@@ -1,0 +1,13 @@
+receiver:
+  option: 1 # 1: wpa_supplicant; 2: iwlist; 3: monitor mode - tcpdump (currently not implemented)
+  wait_time: 1
+  interface: "wlp4s0"
+  pass_code: "128ve9800"
+  input_topic: "dummy_odometry_topic"
+  output_topic: "rss_data_topic"
+  target_frame: "dummy_parent_frame" # From source frame to target frame
+  source_frame: "dummy_child_frame"
+
+
+
+    

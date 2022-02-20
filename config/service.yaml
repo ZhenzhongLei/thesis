@@ -1,0 +1,3 @@
+service:
+  transform_update_server: "transformUpdateServer"
+  transform_request_server: "transformRequestServer"

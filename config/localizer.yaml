@@ -1,0 +1,20 @@
+localizer:
+    topics:
+        input_topic: "rss_data_topic"
+        particle_topic: "localizer/particles"
+        pose_topic: "localizer/pose"
+    frames:
+        output_frame: "output_frame"
+        odometry_frame: "odom"
+        robot_frame: "base_link"
+        
+    parameters:
+        x_min: -20
+        x_max: 20
+        y_min: -20
+        y_max: 20
+        n_particles: 3000
+        rotational_noise: 0.1
+        translational_noise: 0.05
+        resample_threshold: 0.1
+        lower_limit: -95

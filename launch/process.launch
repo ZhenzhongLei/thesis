@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<launch>
+    <!-- YAMLs -->
+    <rosparam command="load" file="$(find wifi_localization)/config/process.yaml" />
+
+    <!-- Start the node -->
+    <node name="process" pkg="wifi_localization" type="process" output="screen" respawn="false">
+        <param name="data_folder" value="$(find wifi_localization)/data/"/>
+        <param name="model_folder" value="$(find wifi_localization)/model/"/>
+    </node>
+</launch>
