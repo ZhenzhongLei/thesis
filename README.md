@@ -69,7 +69,7 @@ Three collection methods are considered and implemented. They are:
 
 For more details, refer to "scan.py" under "src/general/"
 
-Run roslaunch with "collect.launch" file to collect data. However, monitor mode is not integrated with ROS.
+Run roslaunch with "collect.launch" to collect data. Unfortunately, monitor mode is currently not integrated with ROS.
 
 ## Data Processing: ##
 In data processing part:
@@ -90,6 +90,7 @@ Before stating, you need have ROS (refer to link above) and related Python packa
 - [ROS melodic](http://wiki.ros.org/melodic)
 
 Some nodes have to be run in Python2.7:
+
     service: due to default installation of tf module in ROS melodic 
     receiver: due to stability of subprocess module
 
