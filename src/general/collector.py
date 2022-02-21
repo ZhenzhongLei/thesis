@@ -29,7 +29,7 @@ class Collector:
         Load parameters from ROS
         """
         ns = rospy.get_name()
-        self.input_topic_ = rospy.get_param("/collector/input_topic", "default_rss_data_topic")
+        self.input_topic_ = rospy.get_param("/receiver/output_topic", "default_rss_data_topic")
         self.data_folder_ = rospy.get_param(ns + "/data_folder", "default_data_folder")
     
     def rssDataCallBack(self, message):

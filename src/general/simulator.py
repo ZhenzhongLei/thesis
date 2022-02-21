@@ -6,7 +6,7 @@ class Simulator:
     This class is designed to provide dummy position data for testing pipeline.
     '''
     option_ = False
-    dummy_odometry_topic_ = ""
+    dummy_robot_pose_topic_ = ""
     dummy_parent_frame_ = ""
     dummy_child_frame_ = ""
         
@@ -18,7 +18,7 @@ class Simulator:
         """
         self.loadParameters()
         if self.option_:
-            parameter = [self.dummy_odometry_topic_]
+            parameter = [self.dummy_robot_pose_topic_]
         else:
             parameter = [self.dummy_parent_frame_, self.dummy_child_frame_]
         self.startSimulator(parameter)
@@ -28,7 +28,7 @@ class Simulator:
         Load parameters from ROS
         """
         self.option_ = rospy.get_param("/simulation/option", False)
-        self.dummy_odometry_topic_ = rospy.get_param("/simulation/dummy_odometry_topic", "default_odometry_topic")
+        self.dummy_robot_pose_topic_ = rospy.get_param("/simulation/dummy_robot_pose_topic", "default_robot_pose_topic")
         self.dummy_parent_frame_ = rospy.get_param("/simulation/dummy_parent_frame", "default_parent_frame")
         self.dummy_child_frame_ = rospy.get_param("/simulation/dummy_child_frame", "default_child_frame")
         
@@ -41,7 +41,7 @@ class Simulator:
                     if the option is set to False, the list should contain parental frame name and child frame name in order.
         """
         if len(parameter) == 1:
-            thread = threading.Thread(target = self.odometrySimulator, args=parameter)
+            thread = threading.Thread(target = self.robotPoseSimulator, args=parameter)
         else:
             thread = threading.Thread(target = self.tfSimulator, args=parameter)
             
@@ -49,7 +49,7 @@ class Simulator:
         thread.start()
         return thread
 
-    def odometrySimulator(self, topic_name):
+    def robotPoseSimulator(self, topic_name):
         """
         Launch the dummy odometry "simulator" which publishes (x, y, theta)
 

@@ -8,21 +8,6 @@
 
 <h1 align="center">wifi_localization</h1>
 
-<p align="center">
-  <img alt="Github top language" src="https://img.shields.io/github/languages/top/{{YOUR_GITHUB_USERNAME}}/wifi_localization?color=56BEB8">
-
-  <img alt="Github language count" src="https://img.shields.io/github/languages/count/{{YOUR_GITHUB_USERNAME}}/wifi_localization?color=56BEB8">
-
-  <img alt="Repository size" src="https://img.shields.io/github/repo-size/{{YOUR_GITHUB_USERNAME}}/wifi_localization?color=56BEB8">
-
-  <img alt="License" src="https://img.shields.io/github/license/{{YOUR_GITHUB_USERNAME}}/wifi_localization?color=56BEB8">
-
-  <!-- <img alt="Github issues" src="https://img.shields.io/github/issues/{{YOUR_GITHUB_USERNAME}}/wifi_localization?color=56BEB8" /> -->
-
-  <!-- <img alt="Github forks" src="https://img.shields.io/github/forks/{{YOUR_GITHUB_USERNAME}}/wifi_localization?color=56BEB8" /> -->
-
-  <!-- <img alt="Github stars" src="https://img.shields.io/github/stars/{{YOUR_GITHUB_USERNAME}}/wifi_localization?color=56BEB8" /> -->
-</p>
 
 <!-- Status -->
 
@@ -33,44 +18,82 @@
 <hr> -->
 
 <p align="center">
-  <a href="#dart-about">About</a> &#xa0; | &#xa0; 
-  <a href="#sparkles-features">Features</a> &#xa0; | &#xa0;
-  <a href="#rocket-technologies">Technologies</a> &#xa0; | &#xa0;
-  <a href="#white_check_mark-requirements">Requirements</a> &#xa0; | &#xa0;
-  <a href="#checkered_flag-starting">Starting</a> &#xa0; | &#xa0;
+  <a href="#dart-overview">Overview</a> &#xa0; | &#xa0; 
+  <a href="#sparkles-structures">Structures</a> &#xa0; | &#xa0;
+  <a href="#rocket-Features">Features</a> &#xa0; | &#xa0;
+  <a href="#white_check_mark-notice">Notice</a> &#xa0; | &#xa0;
+  <a href="#checkered_flag-installation">Installation</a> &#xa0; | &#xa0;
   <a href="#memo-license">License</a> &#xa0; | &#xa0;
-  <a href="blank">Author</a>
 </p>
 
 <br>
 
-## :dart: About ##
+# :dart: Overview #
+This package contains the implementation of wifi localization system, including data collection, data processing and localization system. 
 
-As the package name suggets, this package is developed to source wifi data. Three different methods for sourcing data are provided under this package.
-Nodes are running in different Python verision:
-  Python 2.7: receiver(due to subprocess), service(due to tf)
-  Python 3.6: simulator, collector, process, localizer
+The localization is based on MCL(Monte Carlo Localization). 
+
+The ackermann model is picked as motion model to propagate particles. 
+
+Sensor model is based on path loss and gaussian process.
   
-## :sparkles: Features ##
+# :sparkles: Structures #
+The project consists of various folders:
 
-Feature 1: ROS support \
-Feature 2: iwlist based \
-Feature 3: csv data storage \
-Feature 4: simple data visualization
+    bin: containing various ROS nodes
+    config: containing parameter files (.yaml) for ROS nodes
+    data: wifi data will be placed under this folder based on dates
+    img: images for documentation
+    launch: ROS launch files
+    model: containing selected bssid and trained sensor model parameters
+    msg: customized ROS messages
+    src: source code of MCL and data collection/processing, MCL components are put under folder "particle"
+    srv: ROS service files
 
-## :rocket: Technologies ##
+Various ROS nodes:
 
-The following tools were used in this project:
-- [Python 2](https://www.python.org/downloads/)
-- [Python 3](https://www.python.org/downloads/)
+    simulator: publish dummy tf data to test pipeline
+    receiver: to associate wifi data with latest robot pose and publish it ROS message
+    service: to provide tf services as some nodes need to work with modules that are only available in Python 3
+    collector: subscribe to assembled rss/pose data and save them in different CSV files under data folder
+    process: pick data from data folder and apply processing, then save the results in model folder
+    localizer: subscribe to receiver output topic, then use results from offline training to estimate pose and determine if kidnapped situation happens or not
+
+# :rocket: Features #
+## Data collection: ##
+Three collection methods are considered and implemented. They are:
+
+    1. iwlist: call iwlist command from Python and do script processing to get wifi signal readings. However, this command bring significant delay
+    2. wpa_cli: this is used as the main method for collecting data
+    3. monitor mode: configure network interface to monitor mode and run sniffer to capture 802.11 radiotap headers, for more details, refer to https://wiki.wireshark.org/CaptureSetup/WLAN 
+
+For more details, refer to "scan.py" under "src/general/"
+
+Run roslaunch with "collect.launch" file to collect data. However, monitor mode is not integrated with ROS.
+
+## Data Processing: ##
+In data processing part:
+
+    1. stable bssids are selected based on effective counts (rss values greater than a certain threshold to be counted more than a certain percentage)
+    2. filter original data and normalize then to scale between 0 to 1 (-95 corresponding to 0 and 0 to 1)
+    3. train sensor model and dump parameters to model folder
+
+Run roslaunch with "process.launch" to process collected data.
+
+## Localization system: ##
+The implementation of MCL has been put under folder "\src\particle\", where "motion.py" contains the implementation of motion model and "sensor.py" contains the implementation of sensor model.
+
+Motion model propagates particles based on odometry data, which is obtained by calling tf services.
+
+# :white_check_mark: Notice #
+Before stating, you need have ROS (refer to link above) and related Python packages installed
 - [ROS melodic](http://wiki.ros.org/melodic)
 
-## :white_check_mark: Requirements ##
+Some nodes have to be run in Python2.7:
+    service: due to default installation of tf module in ROS melodic 
+    receiver: due to stability of subprocess module
 
-Before stating, you need have ROS (refer to link above) and related Python packages installed
-
-## :checkered_flag: Starting ##
-
+# :checkered_flag: Installation #
 ```bash
 ```bash
 # Clone this project
@@ -88,7 +111,7 @@ $ roslaunch wifi_localization collect.launch
 
 ```
 
-## :memo: License ##
+# :memo: License #
 
 To-do
 

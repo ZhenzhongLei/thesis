@@ -11,7 +11,6 @@ class Receiver:
     option_ = False
     interface_ = ""
     pass_code_ = ""
-    input_topic_ = "" 
     output_topic_ = ""
     target_frame_ = ""
     source_frame_ = ""
@@ -51,7 +50,6 @@ class Receiver:
         self.option_ = rospy.get_param("/receiver/option", 1)
         self.interface_ = rospy.get_param("/receiver/interface", "default_interface")
         self.pass_code_ = rospy.get_param("/receiver/pass_code", "default_pass_code")
-        self.input_topic_ = rospy.get_param("/receiver/input_topic", "default_input_topic")
         self.output_topic_ = rospy.get_param("/receiver/output_topic", "default_output_topic")
         self.target_frame_ = rospy.get_param("/receiver/target_frame", "default_target_frame")
         self.source_frame_ = rospy.get_param("/receiver/source_frame", "default_source_frame")

@@ -1,2 +1,3 @@
 collector:
-  input_topic: "rss_data_topic"
+  dummy: "dummy"
+  # In case of needing anything, add here

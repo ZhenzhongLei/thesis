@@ -1,5 +1,5 @@
 simulation:
   option: False # True to publish dummy odometry data, False to publish dummy tf data
-  dummy_odometry_topic: "dummy_odometry_topic"
+  dummy_robot_pose_topic: "dummy_robot_pose_topic" # To publish dummy odometry data
   dummy_child_frame: "dummy_child_frame"  # From child to parent
   dummy_parent_frame: "dummy_parent_frame"

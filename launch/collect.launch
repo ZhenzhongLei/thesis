@@ -9,7 +9,10 @@
     <!-- Start the node -->
     <node name="service" pkg="wifi_localization" type="service" output="screen" respawn="false"/>
 
-    <node name="simulator" pkg="wifi_localization" type="simulator" output="screen" respawn="false"/>
+    <arg name="simulate" default="true" />
+    <group if="$(arg simulate)">
+        <node name="simulator" pkg="wifi_localization" type="simulator" output="screen" respawn="false"/>
+    </group>
 
     <node name="receiver" pkg="wifi_localization" type="receiver" output="screen" respawn="false"/>
     
