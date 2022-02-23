@@ -1,5 +1,5 @@
 <div align="center" id="top"> 
-  <img src="./img/rssi.jpg" alt="wifi_localization" />
+  <img src="./img/rss.jpg" alt="wifi_localization" />
 
   &#xa0;
 
@@ -61,6 +61,9 @@ Various ROS nodes:
 
 # :rocket: Features #
 ## Data collection: ##
+<div align="center" id="collection"> 
+<img src="./img/data collection phase.jpg" alt="data collection" />
+</div> 
 Three collection methods are considered and implemented. They are:
 
     1. iwlist: call iwlist command from Python and do script processing to get wifi signal readings. However, this command bring significant delay
@@ -72,6 +75,9 @@ For more details, refer to "scan.py" under "src/general/"
 Run roslaunch with "collect.launch" to collect data. Unfortunately, monitor mode is currently not integrated with ROS.
 
 ## Data Processing: ##
+<div align="center" id="offline"> 
+<img src="./img/offline training phase.jpg" alt="data processing" />
+</div> 
 In data processing part:
 
     1. stable bssids are selected based on effective counts (rss values greater than a certain threshold to be counted more than a certain percentage)
@@ -81,6 +87,9 @@ In data processing part:
 Run roslaunch with "process.launch" to process collected data.
 
 ## Localization system: ##
+<div align="center" id="online"> 
+<img src="./img/online localization phase.jpg" alt="localization system" />
+</div> 
 The implementation of MCL has been put under folder "\src\particle\", where "motion.py" contains the implementation of motion model and "sensor.py" contains the implementation of sensor model.
 
 Motion model propagates particles based on odometry data, which is obtained by calling tf services.
@@ -120,10 +129,3 @@ Developed by <a href="leizhenzhong15@gmail.com" target="_blank">{zhenzhong lei}<
 &#xa0;
 
 <a href="#top">Back to top</a>
-
-
-
-
-
-
-

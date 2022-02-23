@@ -61,13 +61,22 @@ class Localizer:
             3. initialize monte carlo filter
             4. initialize subscribers and publishers
         """
+        # Load parameters
         self.loadParameters()
+        
+        # Load models
         self.loadModel()
-        self.last_odometry_ = np.array([0, 0, 0])
+        
+        # Initialize MCL
         self.mcl_ = Filter(self.x_min_, self.x_max_, self.y_min_, self.y_max_, self.n_particles_, self.rotational_noise_, self.translational_noise_, self.resample_threshold_)
+        
+        # Initialize subscribers/publishers
         self.rss_data_subscriber_ = rospy.Subscriber(self.input_topic_, rssData, self.rssDataCallBack)
         self.particle_publisher_  = rospy.Publisher(self.particle_topic_, PoseArray, queue_size = 1)
         self.pose_publisher_      = rospy.Publisher(self.pose_topic_, PoseStamped, queue_size = 1)
+        
+        # Other variables
+        self.last_odometry_ = np.array([0, 0, 0])
         
     def loadParameters(self):
         """
@@ -86,7 +95,7 @@ class Localizer:
         self.odometry_frame_ = rospy.get_param("/localizer/frames/odometry_frame", "odom")
         self.robot_frame_ = rospy.get_param("/localizer/frames/robot_frame", "base_link")
         
-        # Parameters
+        # MCL parameters
         self.x_min_ = rospy.get_param("/localizer/parameters/x_min", -20)
         self.x_max_ = rospy.get_param("/localizer/parameters/x_max", +20)
         self.y_min_ = rospy.get_param("/localizer/parameters/y_min", -20)
