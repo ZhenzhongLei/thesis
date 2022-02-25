@@ -8,21 +8,18 @@ class Localizer:
     '''
     The class designed to localize the robot
     '''
-    '''
-    To-do: publish pose, particles
-    '''
     # Data folder 
     model_folder_ = ''
     
     # Topics
     input_topic_ = "" 
-    particle_topic_ = ""
+    particlecloud_topic_ = ""
     pose_topic_ = ""
     
     # Frames
-    output_frame_ = ""
+    map_frame_ = ""
     odometry_frame_ = ""
-    robot_frame_ = ""
+    base_frame_ = ""
     
     # Parameters
     x_min_ = None
@@ -37,7 +34,7 @@ class Localizer:
     
     # Subscribers/publishers
     rss_data_subscriber_ = None 
-    particle_publisher_ = None
+    particlecloud_publisher_ = None
     pose_publisher_ = None
     
     # Services
@@ -72,7 +69,7 @@ class Localizer:
         
         # Initialize subscribers/publishers
         self.rss_data_subscriber_ = rospy.Subscriber(self.input_topic_, rssData, self.rssDataCallBack)
-        self.particle_publisher_  = rospy.Publisher(self.particle_topic_, PoseArray, queue_size = 1)
+        self.particlecloud_publisher_  = rospy.Publisher(self.particlecloud_topic_, PoseArray, queue_size = 1)
         self.pose_publisher_      = rospy.Publisher(self.pose_topic_, PoseStamped, queue_size = 1)
         
         # Other variables
@@ -86,14 +83,14 @@ class Localizer:
         self.model_folder_ = rospy.get_param(ns + "/model_folder", "default_model_folder")
         
         # Topics 
-        self.input_topic_ = rospy.get_param("/localizer/topics/input_topic", "default_input_topic")
-        self.particle_topic_ = rospy.get_param("/localizer/topics/particle_topic", "default_particle_topic")
-        self.pose_topic_ = rospy.get_param("/localizer/topics/pose_topic", "default_pose_topic")
+        self.input_topic_ = rospy.get_param("/receiver/output_topic", "default_rss_data_topic")
+        self.particlecloud_topic_ = rospy.get_param("/localizer/topics/output/particlecloud_topic", "default_particlecloud_topic")
+        self.pose_topic_ = rospy.get_param("/localizer/topics/output/pose_topic", "default_pose_topic")
         
         # Frames
-        self.output_frame_ = rospy.get_param("/localizer/frames/output_frame", "default_output_frame")
-        self.odometry_frame_ = rospy.get_param("/localizer/frames/odometry_frame", "odom")
-        self.robot_frame_ = rospy.get_param("/localizer/frames/robot_frame", "base_link")
+        self.map_frame_ = rospy.get_param("/localizer/frames/map_frame", "default_map_frame")
+        self.odometry_frame_ = rospy.get_param("/localizer/frames/odometry_frame", "default_odom_frame")
+        self.base_frame_ = rospy.get_param("/localizer/frames/base_frame", "default_base_frame")
         
         # MCL parameters
         self.x_min_ = rospy.get_param("/localizer/parameters/x_min", -20)
@@ -112,7 +109,7 @@ class Localizer:
         """
         Find the odometry difference from robot base frame
         """      
-        odometry = callRosService(self.request_service_, transformRequestService, [self.odometry_frame_, self.robot_frame_])
+        odometry = callRosService(self.request_service_, transformRequestService, [self.odometry_frame_, self.base_frame_])
         print("Current odometry data:\n", odometry)
         current_odometry = np.array([odometry.x, odometry.y, odometry.theta])
         action = current_odometry - self.last_odometry_ 
@@ -168,7 +165,7 @@ class Localizer:
         """
         ps = PoseStamped()
         ps.header.stamp = rospy.Time.now()
-        ps.header.stamp = self.output_frame_
+        ps.header.stamp = self.map_frame_
         ps.pose = self.poseFromParticle(estimate)
         self.pose_publisher_.publish(ps)
     
@@ -181,11 +178,11 @@ class Localizer:
         """
         pa = PoseArray()
         pa.header.stamp = rospy.Time.now()
-        pa.header.stamp = self.output_frame_
+        pa.header.stamp = self.map_frame_
         for particle in particles:
             pose = self.poseFromParticle(particle)
             pa.poses.append(pose)
-        self.particle_publisher_.publish(pa)
+        self.particlecloud_publisher_.publish(pa)
     
     def poseFromParticle(self, particle, verbose=False):
         """

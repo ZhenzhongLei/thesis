@@ -9,6 +9,7 @@ import datetime
 import threading
 import numpy as np, copy
 import matplotlib.pyplot as plt
+import message_filters
 from geometry_msgs.msg import Pose2D
 from geometry_msgs.msg import Point
 from geometry_msgs.msg import Vector3
@@ -196,4 +197,18 @@ def drawDistribution(poses):
     ypoints = poses[:, 1]
     plt.plot(xpoints, ypoints, 'o')
     plt.show()
-    
+
+def compareParticles(references, evaluates):
+    """
+    Compare reference and evaluate particleclouds
+
+    Args:
+        references: n x 2 numpy array
+        evaluates: m x 2 numpy array
+    """
+    plt.plot(references[:, 0], references[:, 1], 'o', 'r')
+    plt.plot(evaluates[:, 0], evaluates[:, 1], 'x', 'b')
+    plt.legend(['references','evaluates'])
+    plt.xlabel('x/m')
+    plt.ylabel('y/m')
+    plt.show()

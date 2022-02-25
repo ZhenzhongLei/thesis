@@ -50,7 +50,7 @@ class Filter:
     
     def initialize(self):
         """
-        Initialize particles uniformly among the two-dimensional space and assign equal weights
+        Initialize particles uniformly among the space and assign them equal weights
         """
         self.particles_ = np.zeros((self.n_particles_, 3))
         self.weights_ = np.ones(self.n_particles_) / float(self.n_particles_)
@@ -159,6 +159,7 @@ if __name__ == "__main__":
         arr[i,:] = i
     print(arr)
     print(arr[indexes])
-    
+
+
 
     

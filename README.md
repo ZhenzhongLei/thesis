@@ -58,6 +58,7 @@ Various ROS nodes:
     collector: subscribe to assembled rss/pose data and save them in different CSV files under data folder
     process: pick data from data folder and apply processing, then save the results in model folder
     localizer: subscribe to receiver output topic, then use results from offline training to estimate pose and determine if kidnapped situation happens or not
+    detector: compare the particles from laser based method and wifi based method to detect if robot is kidnapped
 
 # :rocket: Features #
 ## Data collection: ##
@@ -90,9 +91,7 @@ Run roslaunch with "process.launch" to process collected data.
 <div align="center" id="online"> 
 <img src="./img/online localization phase.jpg" alt="localization system" />
 </div> 
-The implementation of MCL has been put under folder "\src\particle\", where "motion.py" contains the implementation of motion model and "sensor.py" contains the implementation of sensor model.
-
-Motion model propagates particles based on odometry data, which is obtained by calling tf services.
+The implementation of MCL has been put under folder "\src\particle\", where "motion.py" contains the implementation of motion model and "sensor.py" contains the implementation of sensor model. Motion model propagates particles based on odometry data, which is obtained by calling tf services.
 
 # :white_check_mark: Notice #
 Before stating, you need have ROS (refer to link above) and related Python packages installed

@@ -1,0 +1,9 @@
+#! /usr/bin/env python3.6
+import rospy
+from general import detector
+
+if __name__ == "__main__":
+    rospy.init_node('Detector')
+    kidnapped_detector = detector.Detector()
+    while not rospy.is_shutdown():
+        rospy.sleep(0.01)

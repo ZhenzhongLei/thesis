@@ -1,12 +1,13 @@
 localizer:
     topics:
-        input_topic: "rss_data_topic"
-        particle_topic: "localizer/particles"
-        pose_topic: "localizer/pose"
+        output:
+            particlecloud_topic: "localizer/particles"
+            pose_topic: "localizer/pose"
     frames:
-        output_frame: "output_frame"
-        odometry_frame: "odom"
-        robot_frame: "base_link"
+        # Refer to http://wiki.ros.org/amcl
+        map_frame: "map_frame"
+        odometry_frame: "odom_frame"
+        base_frame: "base_frame"
         
     parameters:
         x_min: -20

@@ -51,16 +51,30 @@ class Motion:
         particles[:,2] += np.random.normal(loc=0.0,scale=self.rotational_noise_,size=n_particle)
         return particles
 
-if __name__ == "__main__":
-    translational_noise = 0.05 # ...
+def testMotionMOdel():
+    """
+    Check if motion model works properly
+    """   
+    # Noises
+    translational_noise = 0.15
     rotational_noise = 0.02 # 0.01744444444
-    particles = np.array([1, 2, 0.1, 2, 3, 0.4, 3, 3 ,0.5, 4.5, 7.1, 1.3]).reshape(4,3)
-    print(particles)
-    for particle in particles:
-        print("Particle:\n", particle)
-    action = np.array([0.2, 0.3 , -0.17])
-    print("Dummy particles:\n", particles)
+    
+    # Dummy particles
+    n_particles = 1000
+    particles = np.zeros((n_particles, 3))
+    particles[:,0:2] = np.random.uniform(low=[-20, -20], high=[20, 20], size=(n_particles, 2))
+    particles[:,2] = np.random.normal(loc=0.0, scale=np.math.pi/3, size=n_particles)
+    drawDistribution(particles)
+
+    # Dummy action
+    action = np.array([1, 1 , -0.17])
     print("Dummy action:\n", action)
-    model = Motion(translational_noise, rotational_noise)
-    propagated_particles = model.propagate(particles, action)
-    print("Propagated particles:\n", propagated_particles)
+    
+    # Dummy model
+    for i in range(10):
+        model = Motion(translational_noise, rotational_noise)
+        propagated_particles = model.propagate(particles, action)
+        drawDistribution(propagated_particles)
+    
+if __name__ == "__main__":
+    testMotionMOdel()
