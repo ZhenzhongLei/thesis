@@ -1,4 +1,7 @@
 process:
-  sub_folder: "/06-02-22/" # Specifying to pick data from which date
+  path_loss_file: "pathLoss.csv"
+  GP_file: "GP"
+  minimum_rss_value: -95
+  sub_folder: "/28-02-22/" # Specifying to pick data from which date
   minimum_threshold: -65 # Only rss value above this value will be counted
   minimum_repetition_factor: 0.3 # float, between 0 to 1 

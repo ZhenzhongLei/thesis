@@ -20,7 +20,6 @@ from geometry_msgs.msg import PoseArray
 from geometry_msgs.msg import PoseStamped
 from visualization_msgs.msg import Marker
 
-
 def aggregateData(list, key, numeric=False):
     """
     Extract wanted data from each dictionary into a string specified by given key and separated by given delimiter

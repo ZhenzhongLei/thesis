@@ -1,6 +1,4 @@
-from tokenize import Double
 import GPy
-from pyparsing import original_text_for
 import scipy.stats
 import scipy.optimize
 from general.utils import *
@@ -103,7 +101,7 @@ class Sensor:
             verbose: Boolean, to publish calculation details
         
         Return:
-            path loss prediction
+            float, or m x 1 numpy array, path loss prediction for singal access point or all access point at given location
         """
         x = x.reshape(-1, 2)
         if np.size(parameters) > 4:
@@ -141,6 +139,9 @@ class Sensor:
                 [3] -> k, penalty factor, positive number, used to penalize zero reading as those number indicate inability of network interface
                 [4] -> evaluate_function, to calculate path loss
                 [5] -> verbose, Boolean, True to display calculation details
+        
+        Return:
+            float, cost
         """
         assert np.size(parameters) == 4
         
@@ -212,8 +213,8 @@ class Sensor:
         """
         Calculate gaussian process, refer to https://gpy.readthedocs.io/en/deploy/GPy.models.html for more information about GPy
         Args:
-            x: 1 x 2 numpy array, position to predict
-            observation: 1 x n_ap, normalized rss reading 
+            x: 1 x 2 or (2,) numpy array, position to do prediction
+            observation: 1 x n_ap or (n_ap, ) numpy array, normalized rss reading 
             
         return:
             mean, variance, probability
@@ -267,7 +268,7 @@ class Sensor:
         Load training results from specified files
         Args:
             path_loss_file: string, csv file wehre path loss parameters are saved
-            gp_file: string, file name with no extension, in which the traned GP model is saved
+            gp_file: string, file name with ".zip" extension, in which the traned GP model is saved
         """
         # Load path_loss_file
         parameters =  readData(path_loss_file, True)
@@ -279,75 +280,8 @@ class Sensor:
         # Load GP
         self.GP_ = GPy.core.gp.GP.load_model(gp_file)
     
-def testPathLossCalculation():
-    print("Test path loss calculation:")
-    sensor_model = Sensor()
-    sensor_model.calculatePathlossValue(np.array([1, 2, 4, 4]).reshape(2,2), np.array([1, 0.5, 2, 3]), 1e-3, True)
-    print('\n')
-    
-def testObjectiveFunction():
-    print("Test objective function:")
-    X = np.random.random((10, 2))
-    Z = np.random.random(10)
-    parameters = np.array([1, 0.5, 2, 3])   
-    sensor_model = Sensor()
-    value = sensor_model.func(parameters, X, Z, sensor_model.epsilon_, sensor_model.penalty_factor_, sensor_model.calculatePathlossValue, True)
-    print(value, '\n')
-
-def testSensorModel(data_file, minimum_rss_value, path_loss_file, gp_file):
-    # Take in test data
-    data = readData(data_file, True, ',')
-    data = np.array(data).astype(float)
-    
-    # Convert to wanted type
-    X = data[:, 0:2]
-    Z = data[:, 2:13]
-    drawDistribution(X)
-    
-    # Split the data into test and 
-    Z = normalizeRss(Z, minimum_rss_value)
-    
-    # Compute path loss parameters
-    sensor_model = Sensor()  
-    sensor_model.setData(X, Z)
-    sensor_model.initializePathLossParameters()
-    sensor_model.calculatePathlossModel()
-    compareClouds(X, sensor_model.path_loss_params_[2:4,:].T, "reference postions", "inferred AP positions")
-    
-    # Calculate GP
-    sensor_model.calculateGP()
-    
-    # Predict 
-    random_index = 123 #np.random.randint(0, X.shape[0])
-    print("Random drawn data:\n", Z[random_index])
-    
-    mean, _, probability = sensor_model.predict(X[random_index], Z[random_index])
-    print("Predict:\n", mean)
-    print("Probability:\n", probability)
-    print('\n')
-    sensor_model.saveModel(path_loss_file, gp_file)
-    
-def testModelSaveAndLoad(data_file, minimum_rss_value, path_loss_file, gp_file):
-    print('Test saved model')
-    data = readData(data_file, True, ',')
-    data = np.array(data).astype(float)
-    
-    # Convert data
-    X = data[:, 0:2]
-    Z = data[:, 2:13]
-    Z = normalizeRss(Z, minimum_rss_value)
-    
-    # Test
-    random_index = 123 #np.random.randint(0, X.shape[0])
-    print("Random drawn data:\n", Z[random_index])
-    sensor_model = Sensor() 
-    sensor_model.loadModel(path_loss_file, gp_file)
-    result = sensor_model.predict(X[random_index], Z[random_index])
-    print("Result:\n", result)
-    
-if __name__ == "__main__":
-    # testPathLossCalculation()
-    # testObjectiveFunction()
-    result_folder = "/home/andylei/catkin/src/thesis/result/"
-    testSensorModel("/home/andylei/catkin/src/thesis/data/verification/mean.csv", -100, result_folder+"pathLoss.csv", result_folder+"GP")
-    testModelSaveAndLoad("/home/andylei/catkin/src/thesis/data/verification/mean.csv", -100, result_folder+"pathLoss.csv", result_folder+"GP.zip")
+    def __del__(self):
+        """
+        The destructor of the class
+        """
+        return None

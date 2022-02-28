@@ -28,12 +28,14 @@ class Motion:
         Propagate particles based on historical data 
     
         Args:
-            particles: n x 3 array, to be propagated. 
-            states: 2 x 3 array, representing poses at k - 1 moment and k moment       
+            particles: n x 3 numpy array, particles to be propagated. 
+            action: (3,) numpy array, representing movement from k - 1 moment to k moment       
         
         Return:
-            n x3 array, propagated particles
+            n x 3 array, propagated particles
         """       
+        action = action.reshape(3)
+        
         # Calculate the difference
         cosines = np.cos(particles[:,2])
         sines = np.sin(particles[:,2])
@@ -50,31 +52,9 @@ class Motion:
         particles[:,1] += np.random.normal(loc=0.0,scale=self.translation_noise_,size=n_particle)
         particles[:,2] += np.random.normal(loc=0.0,scale=self.rotational_noise_,size=n_particle)
         return particles
-
-def testMotionMOdel():
-    """
-    Check if motion model works properly
-    """   
-    # Noises
-    translational_noise = 0.15
-    rotational_noise = 0.02 # 0.01744444444
     
-    # Dummy particles
-    n_particles = 1000
-    particles = np.zeros((n_particles, 3))
-    particles[:,0:2] = np.random.uniform(low=[-20, -20], high=[20, 20], size=(n_particles, 2))
-    particles[:,2] = np.random.normal(loc=0.0, scale=np.math.pi/3, size=n_particles)
-    drawDistribution(particles)
-
-    # Dummy action
-    action = np.array([1, 1 , -0.17])
-    print("Dummy action:\n", action)
-    
-    # Dummy model
-    for i in range(10):
-        model = Motion(translational_noise, rotational_noise)
-        propagated_particles = model.propagate(particles, action)
-        drawDistribution(propagated_particles)
-    
-if __name__ == "__main__":
-    testMotionMOdel()
+    def __del__(self):
+        """
+        The destructor of the class
+        """
+        return None

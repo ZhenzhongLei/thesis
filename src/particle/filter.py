@@ -7,7 +7,7 @@ class Filter:
     The main body of MCL using motion model and sensor model developed so far.
     """
     # Parameters
-    x_min_ = None
+    x_min_ = None 
     x_max_ = None
     y_min_ = None
     y_max_ = None
@@ -19,8 +19,7 @@ class Filter:
     # Models
     motion_model_ = None
     sensor_model_ = None
-    
-    
+        
     def __init__(self, x_min, x_max, y_min, y_max, n_particles, rotational_noise, translational_noise, resample_threshold):
         """
         Initialize the filter and parameters
@@ -110,13 +109,19 @@ class Filter:
     
     def resetWeights(self):
         """
-        Reset particle weights
+        Reset particle weights to be equal
         """
         self.weights_ = np.ones(self.n_particles_) / float(self.n_particles_)
         
     def estimate(self, action, observation):
         """
-        Reset particle weights
+        Estimate robot pose based on robot motion and observed data
+        
+        Args:
+            action: action: (3,) or (3, 1)/(1, 3) numpy array, representing movement from k - 1 moment to k moment
+            observation: 1 x n_ap or (n_ap, ) numpy array, normalized rss reading 
+        Return:
+            (3,) numpy array, the particle with highest weight
         """
         self.propagateParticles(action)
         self.updateWeights(observation)
@@ -130,45 +135,14 @@ class Filter:
     def getParticles(self):
         """
         Return all particles
+        
+        Return:
+            (n_particls, 3) numpy array, particles
         """
         return self.particles_
 
-
-def testResample():
-    """
-    Test the pipeline of resampling scheme
-    """
-    n_particles = 10
-    weights = np.random.random(n_particles).astype(float)
-    print("Initial weights:\n", weights)
-    weights = weights/np.sum(weights)
-    print("Normalized weights:\n", weights)
-    copies = (np.floor(n_particles*np.asarray(weights))).astype(int)
-    print("Normalized weights:\n", copies)
-    k = 0
-    indexes = np.zeros(n_particles, 'i')
-    for i in range(n_particles):
-        for _ in range(copies[i]): # make n copies
-            indexes[k] = i
-            k += 1
-    print("Retrived indexes:\n", indexes)
-    residual = weights - copies     
-    residual /= sum(residual) 
-    print("Residual:\n", residual)
-    cumulative_sum = np.cumsum(residual)
-    print("Cumulative sum(not fixed):\n", cumulative_sum)
-    cumulative_sum[-1] = 1. 
-    print("Cumulative sum:\n", cumulative_sum)
-    indexes[k:n_particles] = np.searchsorted(cumulative_sum, np.random.random(N-k))
-    print(indexes)
-    arr = np.zeros((n_particles, 3))
-    for i in range(n_particles):
-        arr[i,:] = i
-    print(arr)
-    print(arr[indexes])
-if __name__ == "__main__":
-    testResample()
-
-
-
-    
+    def __del__(self):
+        """
+        The destructor of the class
+        """
+        return None
