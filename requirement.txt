@@ -2,3 +2,4 @@ numpy
 datetime
 matplotlib
 scipy
+GPy

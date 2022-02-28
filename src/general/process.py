@@ -6,7 +6,7 @@ class Process():
     '''
     # Data folder 
     data_folder_ = ''
-    model_folder_ = ''
+    result_folder_ = ''
     
     # Data
     coordinates_ = None
@@ -39,7 +39,7 @@ class Process():
         ns = rospy.get_name()
         self.minimum_threshold_ = rospy.get_param("/process/minimum_threshold", -75)
         self.minimum_repetition_factor_ = rospy.get_param("/process/minimum_repetition_factor", 0.3)
-        self.model_folder_ = rospy.get_param(ns + "/model_folder", "default_model_folder")
+        self.result_folder_ = rospy.get_param(ns + "/result_folder", "default_result_folder")
         self.data_folder_ = rospy.get_param(ns + "/data_folder", "default_data_folder")
         self.data_folder_ += rospy.get_param("/process/sub_folder", "/xx-xx-xx")
         
@@ -87,9 +87,9 @@ class Process():
         Drop selected bssids to the specified file. (bssid.csv under model subfolder of the project folder)
         """
         line = concatenateString(self.selected_bssid_)
-        writeLineToFile(self.model_folder_ + "selections.csv", line, 'w')
+        writeLineToFile(self.result_folder_ + "selections.csv", line, 'w')
         line = concatenateString(self.correspondence_)
-        writeLineToFile(self.model_folder_ + "selections.csv", line, 'a')
+        writeLineToFile(self.result_folder_ + "selections.csv", line, 'a')
     
     def filterData(self):
         data = np.zeros((len(self.bssid_data_), len(self.selected_bssid_)))

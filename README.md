@@ -45,7 +45,7 @@ The project consists of various folders:
     data: wifi data will be placed under this folder based on dates
     img: images for documentation
     launch: ROS launch files
-    model: containing selected bssid and trained sensor model parameters
+    result: containing selected bssid and trained sensor model parameters
     msg: customized ROS messages
     src: source code of MCL and data collection/processing, MCL components are put under folder "particle"
     srv: ROS service files
@@ -56,7 +56,7 @@ Various ROS nodes:
     receiver: to associate wifi data with latest robot pose and publish it ROS message
     service: to provide tf services as some nodes need to work with modules that are only available in Python 3
     collector: subscribe to assembled rss/pose data and save them in different CSV files under data folder
-    process: pick data from data folder and apply processing, then save the results in model folder
+    process: pick data from data folder and apply processing, then save the results in result folder
     localizer: subscribe to receiver output topic, then use results from offline training to estimate pose and determine if kidnapped situation happens or not
     detector: compare the particles from laser based method and wifi based method to detect if robot is kidnapped
 
@@ -83,7 +83,7 @@ In data processing part:
 
     1. stable bssids are selected based on effective counts (rss values greater than a certain threshold to be counted more than a certain percentage)
     2. filter original data and normalize then to scale between 0 to 1 (-95 corresponding to 0 and 0 to 1)
-    3. train sensor model and dump parameters to model folder
+    3. train sensor model and dump parameters to result folder
 
 Run roslaunch with "process.launch" to process collected data.
 

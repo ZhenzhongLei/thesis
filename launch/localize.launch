@@ -18,7 +18,7 @@
     <node name="receiver" pkg="wifi_localization" type="receiver" output="screen" respawn="false"/>
 
     <node name="localizer" pkg="wifi_localization" type="localizer" output="screen" respawn="false">
-        <param name="model_folder" value="$(find wifi_localization)/model/"/>
+        <param name="result_folder" value="$(find wifi_localization)/result/"/>
     </node>
 
     <node name="detector" pkg="wifi_localization" type="detector" output="screen" respawn="false"/>

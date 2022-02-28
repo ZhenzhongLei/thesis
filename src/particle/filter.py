@@ -3,6 +3,9 @@ from particle.sensor import *
 from particle.motion import *
 
 class Filter:
+    """
+    The main body of MCL using motion model and sensor model developed so far.
+    """
     # Parameters
     x_min_ = None
     x_max_ = None
@@ -129,18 +132,22 @@ class Filter:
         Return all particles
         """
         return self.particles_
-    
-if __name__ == "__main__":
-    N = 10
-    weights = np.random.random(N).astype(float)
+
+
+def testResample():
+    """
+    Test the pipeline of resampling scheme
+    """
+    n_particles = 10
+    weights = np.random.random(n_particles).astype(float)
     print("Initial weights:\n", weights)
     weights = weights/np.sum(weights)
     print("Normalized weights:\n", weights)
-    copies = (np.floor(N*np.asarray(weights))).astype(int)
+    copies = (np.floor(n_particles*np.asarray(weights))).astype(int)
     print("Normalized weights:\n", copies)
     k = 0
-    indexes = np.zeros(N, 'i')
-    for i in range(N):
+    indexes = np.zeros(n_particles, 'i')
+    for i in range(n_particles):
         for _ in range(copies[i]): # make n copies
             indexes[k] = i
             k += 1
@@ -152,13 +159,15 @@ if __name__ == "__main__":
     print("Cumulative sum(not fixed):\n", cumulative_sum)
     cumulative_sum[-1] = 1. 
     print("Cumulative sum:\n", cumulative_sum)
-    indexes[k:N] = np.searchsorted(cumulative_sum, np.random.random(N-k))
+    indexes[k:n_particles] = np.searchsorted(cumulative_sum, np.random.random(N-k))
     print(indexes)
-    arr = np.zeros((N, 3))
-    for i in range(N):
+    arr = np.zeros((n_particles, 3))
+    for i in range(n_particles):
         arr[i,:] = i
     print(arr)
     print(arr[indexes])
+if __name__ == "__main__":
+    testResample()
 
 
 

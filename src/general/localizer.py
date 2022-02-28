@@ -9,10 +9,11 @@ class Localizer:
     The class designed to localize the robot
     '''
     # Data folder 
-    model_folder_ = ''
+    result_folder_ = ''
     
     # Topics
     input_topic_ = "" 
+    
     particlecloud_topic_ = ""
     pose_topic_ = ""
     
@@ -80,7 +81,7 @@ class Localizer:
         Load parameters from ROS parameters server
         """
         ns = rospy.get_name()
-        self.model_folder_ = rospy.get_param(ns + "/model_folder", "default_model_folder")
+        self.result_folder_ = rospy.get_param(ns + "/result_folder", "default_result_folder")
         
         # Topics 
         self.input_topic_ = rospy.get_param("/receiver/output_topic", "default_rss_data_topic")
@@ -120,7 +121,7 @@ class Localizer:
         """
         Load model data from the specified model path.
         """
-        self.selected_bssids_ = readData(self.model_folder_ + "selections.csv")[0]
+        self.selected_bssids_ = readData(self.result_folder_ + "selections.csv")[0]
     
     def rssDataCallBack(self, message, verbose=False):
         """

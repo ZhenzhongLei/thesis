@@ -90,7 +90,7 @@ def testKidnappedDetection():
     evaluates = np.array([2.5, 2, 3, 4, 5, 1]).reshape(3, 2)
     print("Evaluates: \n", evaluates)
     metric = 0
-    compareParticles(reference, evaluates)
+    compareClouds(reference, evaluates, "references", evaluates)
     for evaluate in evaluates:
         difference = reference - evaluate
         print("Difference: \n", difference)

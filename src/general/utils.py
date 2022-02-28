@@ -53,7 +53,7 @@ def concatenateString(data, delimiter='\t'):
         Concatenated strings separated by delimeter
     """
     return delimiter.join(data)
-    
+
 def writeLineToFile(file, data, option='a'):
     """
     Write a line of data to the specified file
@@ -198,17 +198,19 @@ def drawDistribution(poses):
     plt.plot(xpoints, ypoints, 'o')
     plt.show()
 
-def compareParticles(references, evaluates):
+def compareClouds(cloud1, cloud2, legend1, legend2):
     """
     Compare reference and evaluate particleclouds
 
     Args:
-        references: n x 2 numpy array
-        evaluates: m x 2 numpy array
+        cloud1: n x 2 numpy array
+        cloud2: m x 2 numpy array
+        legend1: string, legend for cloud1
+        legend2: string, legend for cloud2
     """
-    plt.plot(references[:, 0], references[:, 1], 'o', 'r')
-    plt.plot(evaluates[:, 0], evaluates[:, 1], 'x', 'b')
-    plt.legend(['references','evaluates'])
+    plt.plot(cloud1[:, 0], cloud1[:, 1], 'o')
+    plt.plot(cloud2[:, 0], cloud2[:, 1], 'x')
+    plt.legend([legend1,legend2])
     plt.xlabel('x/m')
     plt.ylabel('y/m')
     plt.show()

@@ -6,6 +6,6 @@
     <!-- Start the node -->
     <node name="process" pkg="wifi_localization" type="process" output="screen" respawn="false">
         <param name="data_folder" value="$(find wifi_localization)/data/"/>
-        <param name="model_folder" value="$(find wifi_localization)/model/"/>
+        <param name="result_folder" value="$(find wifi_localization)/result/"/>
     </node>
 </launch>
