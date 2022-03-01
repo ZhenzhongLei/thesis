@@ -35,13 +35,13 @@ class Process():
         self.selectBssids()
         self.dumpBssids()
         Z = self.filterData()
-        
+        X = np.array(self.coordinates_)[:,0:2]
         # Data for testing pipeline
         # data = readData("/home/andylei/catkin/src/thesis/data/development/mean.csv", True, ',')
         # data = np.array(data).astype(float)
         # X = data[:, 0:2]
         # Z = data[:, 2:13]
-        self.trainModel(np.array(self.coordinates_)[:,0:2], Z)
+        # self.trainModel(X, Z)
         
     def loadParameters(self):
         """

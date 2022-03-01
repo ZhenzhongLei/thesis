@@ -20,7 +20,7 @@ class Filter:
     motion_model_ = None
     sensor_model_ = None
         
-    def __init__(self, x_min, x_max, y_min, y_max, n_particles, rotational_noise, translational_noise, resample_threshold):
+    def __init__(self, x_min, x_max, y_min, y_max, n_particles, rotational_noise, translational_noise, resample_threshold, path_loss_file, GP_file):
         """
         Initialize the filter and parameters
         
@@ -46,6 +46,7 @@ class Filter:
         # Models
         self.motion_model_ = Motion(self.translational_noise_, self.rotational_noise_)
         self.sensor_model_ = Sensor()
+        self.sensor_model_.loadModel(path_loss_file, GP_file)
         
         # Particles, weights, states
         self.initialize()

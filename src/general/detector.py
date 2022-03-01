@@ -6,7 +6,7 @@ class Detector:
     evaluate_particlecloud_topic_ = ""
     
     # Synchronizer for two particlecloud topics
-    synchronizer = None
+    synchronizer_ = None
     
     # Parameters
     threshold_ = None
@@ -16,10 +16,10 @@ class Detector:
         Initializer, load parameters and initialize synchronizer
         """
         self.loadParameters()
-        reference_particlecloud_subscriber = rospy.Subscriber(self.reference_particlecloud_topic_, PoseArray)
-        evaluate_particlecloud_subscriber = rospy.Subscriber(self.evaluate_particlecloud_topic_, PoseArray)
-        synchronizer = message_filters.ApproximateTimeSynchronizer([reference_particlecloud_subscriber, evaluate_particlecloud_subscriber], queue_size=5, slop=0.1)
-        synchronizer.registerCallback(self.callBack)
+        reference_particlecloud_subscriber = message_filters.Subscriber(self.reference_particlecloud_topic_, PoseArray)
+        evaluate_particlecloud_subscriber = message_filters.Subscriber(self.evaluate_particlecloud_topic_, PoseArray)
+        self.synchronizer_ = message_filters.ApproximateTimeSynchronizer([reference_particlecloud_subscriber, evaluate_particlecloud_subscriber], queue_size=5, slop=0.1)
+        self.synchronizer_.registerCallback(self.callBack)
     
     def loadParameters(self):
         """

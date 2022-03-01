@@ -1,4 +1,7 @@
 localizer:
+    files:
+        path_loss_file: "pathLoss.csv"
+        GP_file: "GP"
     topics:
         output:
             particlecloud_topic: "localizer/particles"

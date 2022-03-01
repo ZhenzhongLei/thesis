@@ -8,12 +8,13 @@ class Localizer:
     '''
     The class designed to localize the robot
     '''
-    # Data folder 
+    # Data folder/files
     result_folder_ = ''
+    path_loss_file_ = ''
+    GP_file_ = ''
     
     # Topics
     input_topic_ = "" 
-    
     particlecloud_topic_ = ""
     pose_topic_ = ""
     
@@ -55,18 +56,20 @@ class Localizer:
         """
         Initializer of the localizer class:
             1. load parameters
-            2. load models (pre-selected bssids and calculated sensor model) 
+            2. load trained result (pre-selected bssids and trained sensor model parameter files) 
             3. initialize monte carlo filter
             4. initialize subscribers and publishers
         """
         # Load parameters
         self.loadParameters()
         
-        # Load models
-        self.loadModel()
+        # Load result
+        self.loadResult()
         
         # Initialize MCL
-        self.mcl_ = Filter(self.x_min_, self.x_max_, self.y_min_, self.y_max_, self.n_particles_, self.rotational_noise_, self.translational_noise_, self.resample_threshold_)
+        self.mcl_ = Filter(self.x_min_, self.x_max_, self.y_min_, self.y_max_, 
+                           self.n_particles_, self.rotational_noise_, self.translational_noise_, self.resample_threshold_,
+                           self.result_folder_+self.path_loss_file_, self.result_folder_+self.GP_file_+'.zip')
         
         # Initialize subscribers/publishers
         self.rss_data_subscriber_ = rospy.Subscriber(self.input_topic_, rssData, self.rssDataCallBack)
@@ -117,12 +120,14 @@ class Localizer:
         self.last_odometry_ = current_odometry
         return action
         
-    def loadModel(self):
+    def loadResult(self):
         """
-        Load model data from the specified model path.
+        Load trained data from the specified result path.
         """
         self.selected_bssids_ = readData(self.result_folder_ + "selections.csv")[0]
-    
+        self.path_loss_file_ = rospy.get_param("/localizer/files/path_loss_file", "pathLoss.csv")
+        self.GP_file_ = rospy.get_param("/localizer/files/GP_file", "GP")
+        
     def rssDataCallBack(self, message, verbose=False):
         """
         Receive rss data from input topic
@@ -166,7 +171,7 @@ class Localizer:
         """
         ps = PoseStamped()
         ps.header.stamp = rospy.Time.now()
-        ps.header.stamp = self.map_frame_
+        ps.header.frame_id = self.map_frame_
         ps.pose = self.poseFromParticle(estimate)
         self.pose_publisher_.publish(ps)
     
@@ -179,10 +184,8 @@ class Localizer:
         """
         pa = PoseArray()
         pa.header.stamp = rospy.Time.now()
-        pa.header.stamp = self.map_frame_
-        for particle in particles:
-            pose = self.poseFromParticle(particle)
-            pa.poses.append(pose)
+        pa.header.frame_id = self.map_frame_
+        pa.poses = [self.poseFromParticle(particle) for particle in particles ] 
         self.particlecloud_publisher_.publish(pa)
     
     def poseFromParticle(self, particle, verbose=False):
@@ -191,18 +194,17 @@ class Localizer:
         
         Args:
             particle: 1 x 3 numpy array of the form [x, y, theta]
-            verbose: bool, True to publish particle
+            verbose: bool, True to publish details
             
         Return:
             pose of type geometry_msgs.msg.Pose
         """
-        pose = Pose()
-        pose.position.x = particle[0]
-        pose.position.y = particle[1]
-        pose.orientation = getQuaternionFromEuler(0, 0, particle[2])
+        point = Point(particle[0], particle[1], 0)
+        orientation = Quaternion(*getQuaternionFromEuler(0, 0, particle[2]))
+        pose = Pose(point, orientation)
         if verbose:
             print("Particle:\n", particle)
-            print("Orientation:\n", getQuaternionFromEuler(0, 0, particle[2]))
+            print("Orientation:\n", pose.orientation, '\n')
         return pose
     
     def __del__(self):

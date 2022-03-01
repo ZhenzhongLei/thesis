@@ -49,6 +49,7 @@ The project consists of various folders:
     msg: customized ROS messages
     src: source code of MCL and data collection/processing, MCL components are put under folder "particle"
     srv: ROS service files
+    test: scripts for checking implementation
 
 Various ROS nodes:
 
