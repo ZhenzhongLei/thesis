@@ -22,6 +22,7 @@ class Localizer:
     map_frame_ = ""
     odometry_frame_ = ""
     base_frame_ = ""
+    wifi_base_frame_ = ""
     
     # Parameters
     x_min_ = None
@@ -31,8 +32,7 @@ class Localizer:
     n_particles_ = None
     rotational_noise_ = None
     translational_noise_ = None
-    resample_threshold_ = None
-    lower_limit_ = None
+    minimum_rss_value_ = None
     
     # Subscribers/publishers
     rss_data_subscriber_ = None 
@@ -68,16 +68,21 @@ class Localizer:
         
         # Initialize MCL
         self.mcl_ = Filter(self.x_min_, self.x_max_, self.y_min_, self.y_max_, 
-                           self.n_particles_, self.rotational_noise_, self.translational_noise_, self.resample_threshold_,
-                           self.result_folder_+self.path_loss_file_, self.result_folder_+self.GP_file_+'.zip')
+                           self.n_particles_, self.rotational_noise_, self.translational_noise_,
+                           self.result_folder_+self.path_loss_file_, self.result_folder_+self.GP_file_+'.zip',
+                           self.result_folder_+"filtered_coordinates.csv", self.result_folder_+"filtered_data.csv", False)
         
         # Initialize subscribers/publishers
         self.rss_data_subscriber_ = rospy.Subscriber(self.input_topic_, rssData, self.rssDataCallBack)
         self.particlecloud_publisher_  = rospy.Publisher(self.particlecloud_topic_, PoseArray, queue_size = 1)
-        self.pose_publisher_      = rospy.Publisher(self.pose_topic_, PoseStamped, queue_size = 1)
+        self.pose_publisher_ = rospy.Publisher(self.pose_topic_, Odometry, queue_size = 1)
         
         # Other variables
-        self.last_odometry_ = np.array([0, 0, 0])
+        odometry = callRosService(self.request_service_, transformRequestService, [self.odometry_frame_, self.base_frame_])
+        self.last_odometry_  = np.array([odometry.x, odometry.y, odometry.theta])
+        
+        # Publish initial wifi pose
+        callRosService(self.update_service_, transformUpdateService, [self.map_frame_, self.wifi_base_frame_, 0, 0, 0])
         
     def loadParameters(self):
         """
@@ -95,6 +100,7 @@ class Localizer:
         self.map_frame_ = rospy.get_param("/localizer/frames/map_frame", "default_map_frame")
         self.odometry_frame_ = rospy.get_param("/localizer/frames/odometry_frame", "default_odom_frame")
         self.base_frame_ = rospy.get_param("/localizer/frames/base_frame", "default_base_frame")
+        self.wifi_base_frame_ = rospy.get_param("/localizer/frames/wifi_base_frame", "default_wifi_base_frame")
         
         # MCL parameters
         self.x_min_ = rospy.get_param("/localizer/parameters/x_min", -20)
@@ -104,9 +110,8 @@ class Localizer:
         self.n_particles_ = rospy.get_param("/localizer/parameters/n_particles", 3000)
         self.rotational_noise_ = rospy.get_param("/localizer/parameters/rotational_noise", 0.1)
         self.translational_noise_ = rospy.get_param("/localizer/parameters/translational_noise", 0.05)
-        self.resample_threshold_ = rospy.get_param("/localizer/parameters/resample_threshold", 0.1)
-        self.lower_limit_ = rospy.get_param("/localizer/parameters/lower_limit", -95)
-        self.request_service_ = rospy.get_param("/service/transform_request_server", "default_update_server")
+        self.minimum_rss_value_ = rospy.get_param("/localizer/parameters/minimum_rss_value", -100)
+        self.request_service_ = rospy.get_param("/service/transform_request_server", "default_request_server")
         self.update_service_ = rospy.get_param("/service/transform_update_server", "default_update_server")
         
     def retriveAction(self):
@@ -114,7 +119,6 @@ class Localizer:
         Find the odometry difference from robot base frame
         """      
         odometry = callRosService(self.request_service_, transformRequestService, [self.odometry_frame_, self.base_frame_])
-        print("Current odometry data:\n", odometry)
         current_odometry = np.array([odometry.x, odometry.y, odometry.theta])
         action = current_odometry - self.last_odometry_ 
         self.last_odometry_ = current_odometry
@@ -141,8 +145,8 @@ class Localizer:
             verbose: bool, True to publish running info
         """
         # Process rss data
-        selected_rss = filterRssData(message.bssid, message.rss, self.selected_bssids_, self.lower_limit_)
-        normalized_rss = normalizeRss(selected_rss, self.lower_limit_)
+        selected_rss = filterRssData(message.bssid, message.rss, self.selected_bssids_, self.minimum_rss_value_)
+        normalized_rss = normalizeRss(selected_rss, self.minimum_rss_value_)
         
         # Retrive action
         action = self.retriveAction()
@@ -153,27 +157,29 @@ class Localizer:
             print("Action:\n", action)
         
         # Use mcl to estimate pose
-        # estimate = self.mcl_.estimate(action, rss)
-        # particles = self.mcl_.getParticles()
-        estimate = np.array([1 , 1, 0])
-        particles = np.array([1, 2, 0.1, 2, 3, 0.4, 3, 3 ,0.5, 4.5, 7.1, 1.3]).reshape(4,3)
+        estimate = self.mcl_.estimate(action, normalized_rss)
+        particles = self.mcl_.getParticles()
         
-        # Publish 
-        self.publishPose(estimate)
+        # Update pose
+        callRosService(self.update_service_, transformUpdateService, [self.map_frame_, self.wifi_base_frame_, estimate[0], estimate[1], estimate[2]])
+        
+        # Publish particles
+        self.publishPoseOdometry(estimate)
         self.publishParticless(particles)
     
-    def publishPose(self, estimate):
+    def publishPoseOdometry(self, estimate):
         """
         Publish pose
         
         Args:
             estimate: 1 x 3 numpy array of the form [x, y, theta]
         """
-        ps = PoseStamped()
-        ps.header.stamp = rospy.Time.now()
-        ps.header.frame_id = self.map_frame_
-        ps.pose = self.poseFromParticle(estimate)
-        self.pose_publisher_.publish(ps)
+        odometry = Odometry()
+        odometry.header.stamp = rospy.Time.now()
+        odometry.header.frame_id = self.map_frame_
+        odometry.child_frame_id = self.wifi_base_frame_
+        odometry.pose.pose = self.poseFromParticle(estimate)
+        self.pose_publisher_.publish(odometry)
     
     def publishParticless(self, particles):
         """

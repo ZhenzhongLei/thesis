@@ -36,18 +36,10 @@ class Motion:
         """       
         action = action.reshape(3)
         
-        # Calculate the difference
-        cosines = np.cos(particles[:,2])
-        sines = np.sin(particles[:,2])
-        
         # ...
         n_particle = particles.shape[0]
-        local_deltas = np.zeros((n_particle, 3))
-        local_deltas[:,0] = cosines*action[0] - sines*action[1]
-        local_deltas[:,1] = sines*action[0] + cosines*action[1]
-        local_deltas[:,2] = action[2]
 
-        particles[:,:] += local_deltas
+        particles[:,:] += action
         particles[:,0] += np.random.normal(loc=0.0,scale=self.translation_noise_,size=n_particle)
         particles[:,1] += np.random.normal(loc=0.0,scale=self.translation_noise_,size=n_particle)
         particles[:,2] += np.random.normal(loc=0.0,scale=self.rotational_noise_,size=n_particle)

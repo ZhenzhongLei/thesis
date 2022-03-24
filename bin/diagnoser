@@ -1,9 +1,9 @@
 #! /usr/bin/env python3.6
 import rospy
-from general import simulator
+from general import diagnoser
 
 if __name__ == "__main__":
-    rospy.init_node('Simulator')
-    rssi_collector = simulator.Simulator()
+    rospy.init_node('Localizer')
+    wifi_diagnoser = diagnoser.Diagnoser()
     while not rospy.is_shutdown():
         rospy.sleep(0.01)

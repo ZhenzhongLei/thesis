@@ -2,19 +2,13 @@
 <launch>
     <!-- YAMLs -->
     <rosparam command="load" file="$(find wifi_localization)/config/service.yaml" />
-    <rosparam command="load" file="$(find wifi_localization)/config/simulator.yaml" />
     <rosparam command="load" file="$(find wifi_localization)/config/receiver.yaml" />
     <rosparam command="load" file="$(find wifi_localization)/config/collector.yaml" />
 
     <!-- Start the node -->
     <node name="service" pkg="wifi_localization" type="service" output="screen" respawn="false"/>
 
-    <arg name="simulate" default="true" />
-    <group if="$(arg simulate)">
-        <node name="simulator" pkg="wifi_localization" type="simulator" output="screen" respawn="false"/>
-    </group>
-
-    <node name="receiver" pkg="wifi_localization" type="receiver" output="screen" respawn="false"/>
+    <!-- <node name="receiver" pkg="wifi_localization" type="receiver" output="screen" respawn="false"/> -->
     
     <node name="collector" pkg="wifi_localization" type="collector" output="screen" respawn="false">
         <param name="data_folder" value="$(find wifi_localization)/data/"/>

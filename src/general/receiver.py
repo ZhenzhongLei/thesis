@@ -8,7 +8,6 @@ class Receiver:
     This class is designed to receive rss data, position data and resend them in ROS message.
     '''
     # Input related items
-    option_ = False
     interface_ = ""
     pass_code_ = ""
     output_topic_ = ""
@@ -47,7 +46,6 @@ class Receiver:
         """
         Load parameters from ROS
         """
-        self.option_ = rospy.get_param("/receiver/option", 1)
         self.interface_ = rospy.get_param("/receiver/interface", "default_interface")
         self.pass_code_ = rospy.get_param("/receiver/pass_code", "default_pass_code")
         self.output_topic_ = rospy.get_param("/receiver/output_topic", "default_output_topic")
@@ -68,17 +66,15 @@ class Receiver:
             
             # Get the scanning data
             try: 
-                if self.option_ == 1:
-                    data = getScanWpa(self.interface_, password=self.pass_code_)
-                    APinfo = processWpaReturn(data['output'].decode())
-                elif self.option_ == 2:
-                    data = getScanIwlist(self.interface_, password=self.pass_code_)
-                    APinfo = processIwlistReturn(data['output'].decode())
-                else:
-                    raise NotImplementedError
+                data = getScanWpa(self.interface_, password=self.pass_code_)
+                APinfo = processWpaReturn(data['output'].decode())
             except IOError:
                 continue
-
+            
+            # If only single AP data is available, dump it
+            if len(APinfo) < 2:
+                continue
+            
             # Get the current position data
             position = self.retrievePose()
             
@@ -103,6 +99,8 @@ class Receiver:
             rssData message
         """
         data = rssData()
+        data.header.stamp = rospy.Time.now()
+        data.header.frame_id = "wifi_frame"
         data.x = position[0]
         data.y = position[1]
         data.theta = position[2]

@@ -1,3 +1,2 @@
 collector:
-  dummy: "dummy"
-  # In case of needing anything, add here
+  sub_folder: "/test/" # Subfolder to save data under parent folder ../data, don't omit backslash symbols

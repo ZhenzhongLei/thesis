@@ -1,7 +1,21 @@
 process:
-  path_loss_file: "pathLoss.csv"
-  GP_file: "GP"
-  minimum_rss_value: -95
-  sub_folder: "/28-02-22/" # Specifying to pick data from which date
-  minimum_threshold: -65 # Only rss value above this value will be counted
-  minimum_repetition_factor: 0.3 # float, between 0 to 1 
+  general:
+    GP_file: "GP"
+    path_loss_file: "pathLoss.csv" 
+    sub_folder: "/test/" # Specifying to pick data from which subfolder 
+
+  options:
+    process_option: false # If true, filter the data and select bssid, if not, load filtered data and train sensor model
+    training_option: true # If true, averaged data will be used for training and if not, normalized data will be used
+    save_model_option: true # If true, trained model parameters will be saved to "../result"
+
+  parameters:
+    scale_x: 0.25 # The cell size used to average data
+    scale_y: 0.25 # The cell size used to average data
+    minimum_rss_value: -100 # Minimum rss value used for normalization
+    minimum_threshold: -65 # Only rss value above this value will be counted
+    minimum_repetition_factor: 0.3 # float, between 0 to 1 
+
+  filter:
+    enable: true # If true, bssid selections from specified folder will be used to filter data
+    source: "/training/"  # The folder to load bssid selectiosn to filter data

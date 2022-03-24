@@ -4,6 +4,6 @@ from general import detector
 
 if __name__ == "__main__":
     rospy.init_node('Detector')
-    kidnapped_detector = detector.Detector()
+    krp_detector = detector.Detector()
     while not rospy.is_shutdown():
         rospy.sleep(0.01)

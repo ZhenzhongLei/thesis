@@ -35,5 +35,4 @@ def testResample():
     
 if __name__ == "__main__":
     # testResample()
-    arr = np.array([1,2,3,4]).reshape(2,2)
-    print(arr[0].shape)
+    # print(arr[indexes], np.mean(arr[indexes], axis=0))

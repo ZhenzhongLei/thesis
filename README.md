@@ -60,6 +60,7 @@ Various ROS nodes:
     process: pick data from data folder and apply processing, then save the results in result folder
     localizer: subscribe to receiver output topic, then use results from offline training to estimate pose and determine if kidnapped situation happens or not
     detector: compare the particles from laser based method and wifi based method to detect if robot is kidnapped
+    diagnoser: simplified detection system with some new metrics
 
 # :rocket: Features #
 ## Data collection: ##

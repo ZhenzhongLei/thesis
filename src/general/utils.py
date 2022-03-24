@@ -1,7 +1,6 @@
 import os
 import sys
 import glob
-from xml.dom import NotSupportedErr
 import rospy
 import time
 import csv
@@ -10,6 +9,8 @@ import threading
 import numpy as np, copy
 import matplotlib.pyplot as plt
 import message_filters
+from xml.dom import NotSupportedErr
+from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Pose2D
 from geometry_msgs.msg import Point
 from geometry_msgs.msg import Vector3
@@ -20,6 +21,16 @@ from geometry_msgs.msg import PoseArray
 from geometry_msgs.msg import PoseStamped
 from visualization_msgs.msg import Marker
 
+def checkDirectory(directory):
+    """
+    Check the existance of a directory. Then if not, create it.
+    
+    Args:
+        directory (string): the directory to check
+    """
+    if not os.path.isdir(directory):
+        os.mkdir(directory)
+        
 def aggregateData(list, key, numeric=False):
     """
     Extract wanted data from each dictionary into a string specified by given key and separated by given delimiter
@@ -59,12 +70,30 @@ def writeLineToFile(file, data, option='a'):
 
     Args:
         file: string, name of the specified file
-        data: string, the data to be write to file
+        data: string, the data to be written to file
         option: character, 'a' to append, 'w' to overwrite
     """
     with open(file, option) as f:
         f.writelines(data + '\n')
 
+def saveArrayToFile(file, array, delimiter='\t'):
+    """
+    Write a line of data to the specified file
+
+    Args:
+        file: string, name of the specified file
+        array: numpy array, the numeric data to be written to file
+        delimiter: character, used to separate array entries
+    """
+    # Save array in a row-by-raw manner
+    for i in range(array.shape[0]):
+        if i == 0:
+            option = "w" 
+        else:
+            option = "a"
+        line = concatenateString([str(value) for value in array[i]], delimiter)
+        writeLineToFile(file, line, option)
+            
 def readData(file, numeric=False, separator='\t'):
     """
     Read the numerical data from a csv file
@@ -213,3 +242,31 @@ def compareClouds(cloud1, cloud2, legend1, legend2):
     plt.xlabel('x/m')
     plt.ylabel('y/m')
     plt.show()
+
+def generatePointsOverPlane(x_min, x_max, y_min, y_max, num_x, num_y):
+    """
+    Generate points over a plane of specified size
+
+    Args:
+        x_min: float, lower bound in x axis
+        x_max: float, upper bound in x axis
+        y_min: float, lower bound in x axis
+        y_max: float, upper bound in x axis
+        num_x: float, lower bound in x axis
+        num_y: float, upper bound in x axis
+    
+    Returns:
+        grid of x coordinates
+        grid of y coordinates
+        reformated points
+    """
+    n_points = num_x*num_y
+    x = np.linspace(x_min, x_max, num_x)
+    y = np.linspace(y_min, y_max, num_y)
+    X_grid, Y_grid = np.meshgrid(x, y)
+    
+    # Flatten the grid
+    points = np.zeros((n_points,2))
+    points[:,0] = X_grid.reshape(n_points)
+    points[:,1] = Y_grid.reshape(n_points)
+    return (X_grid, Y_grid, points)

@@ -1,0 +1,21 @@
+diagnoser:
+    files:
+        path_loss_file: "pathLoss.csv"
+        GP_file: "GP.zip"
+    topics:
+        output:
+            relocalize_publisher_: "/initialPose"
+
+    frames:
+        # Refer to http://wiki.ros.org/amcl
+        map_frame: "map"
+        base_frame: "base_link"
+
+    parameters:
+        x_min: 0
+        x_max: 22
+        y_min: -13
+        y_max: 4
+        minimum_rss_value: -100
+        krp_count: 3
+        krp_threshold: 0.0001

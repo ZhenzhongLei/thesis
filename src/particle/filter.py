@@ -14,13 +14,13 @@ class Filter:
     n_particles_ = None
     rotational_noise_ = None
     translational_noise_ = None
-    resample_threshold_ = None
     
     # Models
     motion_model_ = None
     sensor_model_ = None
+    is_initialized_ = False
         
-    def __init__(self, x_min, x_max, y_min, y_max, n_particles, rotational_noise, translational_noise, resample_threshold, path_loss_file, GP_file):
+    def __init__(self, x_min, x_max, y_min, y_max, n_particles, rotational_noise, translational_noise, path_loss_file, GP_file, coordinates_file, rss_file, sensor_option):
         """
         Initialize the filter and parameters
         
@@ -41,24 +41,31 @@ class Filter:
         self.n_particles_ = n_particles
         self.rotational_noise_ = rotational_noise
         self.translational_noise_ = translational_noise
-        self.resample_threshold_ = resample_threshold
         
         # Models
         self.motion_model_ = Motion(self.translational_noise_, self.rotational_noise_)
-        self.sensor_model_ = Sensor()
-        self.sensor_model_.loadModel(path_loss_file, GP_file)
-        
-        # Particles, weights, states
-        self.initialize()
-    
-    def initialize(self):
+        if sensor_option:
+            self.sensor_model_ = Sensor()
+            self.sensor_model_.loadModel(path_loss_file, GP_file)
+        else:
+            self.sensor_model_ = KNN()
+            self.sensor_model_.loadData(coordinates_file, rss_file)
+            
+    def initialize(self, observation):
         """
         Initialize particles uniformly among the space and assign them equal weights
         """
+        self.is_initialized_ = True
+        
+        # Find the probable region
+        _, _, points = generatePointsOverPlane(self.x_min_, self.x_max_, self.y_min_, self.y_max_, 50, 50)
+        probability_array = self.sensor_model_.predict(points, observation)
+        most_probable_point = points[np.argmax(probability_array), :]
+        
+        # Assign particles and weights
         self.particles_ = np.zeros((self.n_particles_, 3))
-        self.weights_ = np.ones(self.n_particles_) / float(self.n_particles_)
-        self.particles_[:,0:2] = np.random.uniform(low=[self.x_min_, self.y_min_], high=[self.x_max_, self.y_max_], size=(self.n_particles_, 2))
-        self.particles_[:,2] = np.random.normal(loc=0.0, scale=np.math.pi/3, size=self.n_particles_)
+        self.particles_[:, 0:2] = np.random.normal(most_probable_point, 1, (self.n_particles_, 2))
+        self.weights_ = self.sensor_model_.predict(self.particles_[:, 0:2], observation)
         
     def propagateParticles(self, action):
         """
@@ -70,8 +77,7 @@ class Filter:
         """
         Update particle weights based on sensor model
         """
-        for i in range(self.n_particles_):
-            self.weights_[i] = self.weights_[i]*self.sensor_model_.predict(self.particles_[i, 0:2], observation)
+        self.weights_ = self.weights_*self.sensor_model_.predict(self.particles_[:, 0:2], observation)
     
     def normalizeWeights(self):
         """
@@ -79,7 +85,7 @@ class Filter:
         """
         self.weights_ = self.weights_/np.sum(self.weights_)
         
-    def resample(self):
+    def residualResample(self):
         """
         Performs the residual resampling algorithm used by particle filters. Based on observation that we don't need to use random numbers to select
         most of the weights. Take int(N*w^i) samples of each particle i, and then resample any remaining using a standard resampling algorithm. The purpose
@@ -107,7 +113,23 @@ class Filter:
 
         # Resample particles based on selected indexes
         self.particles_ = self.particles_[indexes]
-    
+
+    def resampleWheel(self):
+        """
+        Resample particles
+        """
+        index = np.random.randint(self.n_particles_)
+        beta = 0.0
+        maximum_weights = np.max(self.weights_)
+        resampled_particles = np.zeros((self.n_particles_, 3))
+        for i in range(self.n_particles_):
+            beta = beta + np.random.rand()*2*maximum_weights
+            while beta > self.weights_[index]:
+                beta -= self.weights_[index]
+                index = (index+1)%self.n_particles_
+            resampled_particles[i] = self.particles_[index]
+        self.particles_ = resampled_particles
+        
     def resetWeights(self):
         """
         Reset particle weights to be equal
@@ -124,13 +146,17 @@ class Filter:
         Return:
             (3,) numpy array, the particle with highest weight
         """
-        self.propagateParticles(action)
-        self.updateWeights(observation)
-        self.normalizeWeights()
-        index = np.max(self.weights_)
-        if np.sum(self.weights_**2) < self.resample_threshold_:
-            self.resample()
+        if self.is_initialized_:
+            self.propagateParticles(action)
+            self.updateWeights(observation)
+            self.normalizeWeights()
+            index = np.argmax(self.weights_)
+            self.residualResample()
             self.resetWeights()
+        else:
+            self.initialize(observation)
+            self.normalizeWeights()
+            index = np.argmax(self.weights_)
         return self.particles_[index]
     
     def getParticles(self):

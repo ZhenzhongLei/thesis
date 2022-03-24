@@ -8,6 +8,7 @@ class Collector:
     # Input related items
     input_topic_ = "" 
     data_folder_ = ""
+    sub_folder_ = ""
     
     # Subscribers
     rss_data_subscriber_ = None 
@@ -31,7 +32,8 @@ class Collector:
         ns = rospy.get_name()
         self.input_topic_ = rospy.get_param("/receiver/output_topic", "default_rss_data_topic")
         self.data_folder_ = rospy.get_param(ns + "/data_folder", "default_data_folder")
-    
+        self.sub_folder_ = rospy.get_param("collector/sub_folder", "default_data_folder")
+        
     def rssDataCallBack(self, message):
         """
         Get the latest positioning informaton
@@ -39,19 +41,16 @@ class Collector:
         Args: 
             message: Pose2D type, the published 2D odometey data from localization node
         """
-        date = datetime.datetime.now().strftime("%d-%m-%y")
-        self.checkFiles(date)
+        self.checkFiles(self.sub_folder_)
+        # Notice only items in "coordinates.csv" file are seperated by ' '.
         self.saveCoordinates(message.x, message.y, message.theta)
         self.saveBssid(concatenateString(message.bssid))
         self.saveSsid(concatenateString(message.ssid))
-        rss = []
-        for value in message.rss:
-            rss.append(str(value))
-        self.saveRss(concatenateString(rss))
+        self.saveRss(concatenateString([str(value) for value in message.rss]))
         
-    def checkFiles(self, date):
+    def checkFiles(self, sub_folder):
         """
-        Check if data files exist based on provided date information. If not, create them.
+        Check if data files exist on provided subfolder. If not, create them.
         - folder: $(day)-$(month)-$(year)
             - "bssid.csv"
             - "coordinates.csv"
@@ -59,11 +58,10 @@ class Collector:
             - "rss.csv"
 
         Args:
-            date: string, having information about day, month and year
+            sub_folder: string, subfolder to save data
         """
-        directory = self.data_folder_ + date
-        if not os.path.isdir(directory):
-            os.mkdir(directory)
+        directory = self.data_folder_ + sub_folder + "/raw"
+        checkDirectory(directory)
         os.chdir(directory)
         if not os.path.isfile("bssid.csv"):
             with open('bssid.csv', 'w'): pass

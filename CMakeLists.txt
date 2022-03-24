@@ -37,9 +37,10 @@ install(DIRECTORY config launch rviz
 catkin_install_python(PROGRAMS
   bin/service
   bin/receiver
-  bin/simulator
   bin/collector
   bin/process
   bin/localizer
+  bin/detector
+  bin/diagnoser
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )

@@ -8,17 +8,18 @@ localizer:
             pose_topic: "localizer/pose"
     frames:
         # Refer to http://wiki.ros.org/amcl
-        map_frame: "map_frame"
-        odometry_frame: "odom_frame"
-        base_frame: "base_frame"
-        
+        map_frame: "map"
+        odometry_frame: "odom"
+        base_frame: "base_link"
+        # wifi base frame
+        wifi_base_frame: "wifi_base_frame"
+
     parameters:
         x_min: -20
         x_max: 20
         y_min: -20
         y_max: 20
-        n_particles: 3000
-        rotational_noise: 0.1
-        translational_noise: 0.05
-        resample_threshold: 0.1
-        lower_limit: -95
+        n_particles: 500
+        rotational_noise: 0.05
+        translational_noise: 0.2
+        minimum_rss_value: -100
