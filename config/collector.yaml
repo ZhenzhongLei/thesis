@@ -1,2 +1,2 @@
 collector:
-  sub_folder: "/test/" # Subfolder to save data under parent folder ../data, don't omit backslash symbols
+  sub_folder: "/training/" # Subfolder to save data under parent folder ../data, don't omit backslash symbols

@@ -250,10 +250,10 @@ def generatePointsOverPlane(x_min, x_max, y_min, y_max, num_x, num_y):
     Args:
         x_min: float, lower bound in x axis
         x_max: float, upper bound in x axis
-        y_min: float, lower bound in x axis
-        y_max: float, upper bound in x axis
+        y_min: float, lower bound in y axis
+        y_max: float, upper bound in y axis
         num_x: float, lower bound in x axis
-        num_y: float, upper bound in x axis
+        num_y: float, upper bound in y axis
     
     Returns:
         grid of x coordinates

@@ -1,0 +1,4 @@
+four ap: -55 0.15
+seven ap: -60 0.18
+ten ap: -65 0.3
+fourteen ap: -65 0.2

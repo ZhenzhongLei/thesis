@@ -53,7 +53,6 @@ The project consists of various folders:
 
 Various ROS nodes:
 
-    simulator: publish dummy tf data to test pipeline
     receiver: to associate wifi data with latest robot pose and publish it ROS message
     service: to provide tf services as some nodes need to work with modules that are only available in Python 3
     collector: subscribe to assembled rss/pose data and save them in different CSV files under data folder

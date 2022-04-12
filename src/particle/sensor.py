@@ -1,6 +1,6 @@
 import GPy
-import scipy.stats
 import scipy.optimize
+import scipy.stats as stats
 from scipy.spatial.kdtree import KDTree
 from general.utils import *
 
@@ -17,8 +17,8 @@ class Sensor:
     # Path loss parameters
     path_loss_params_ = None # The parameters used to compute path loss model, expected to be 4 x n_ap_
     epsilon_ = 1e-3 # The term used to prevent distance evaluation between reference positions and access point positions from zero 
-    penalty_factor_ = 10 # The term used to penalize "bad" path loss predictions
-    delta_ = 0.02 # Small interval for computing probability
+    penalty_factor_ = 0.02 # The term used to penalize "bad" path loss predictions
+    delta_ = 0.01 # Small interval for computing probability
     weight_scale_ = 2 # The scaling factor used to supress low likelihood
     
     # GP
@@ -44,7 +44,7 @@ class Sensor:
         self.X_ = X
         self.Z_ = Z
         self.n_ap_ = Z.shape[1]
-        self.path_loss_params_ = np.zeros((5, self.n_ap_))
+        self.path_loss_params_ = np.zeros((4, self.n_ap_))
         if verbose:
             print("The position data has dimension of:\n", self.X_.shape)
             print("The RSSI reading has dimension of:\n", self.Z_.shape)
@@ -87,11 +87,10 @@ class Sensor:
             verbose: Boolean, True to display execution details
         """
         self.path_loss_params_[0, :] = 0.9
-        self.path_loss_params_[1, :] = 0.5
+        self.path_loss_params_[1, :] = 1.5
         indexes = np.argmax(self.Z_, axis=0)
         for i in range(self.n_ap_):
             self.path_loss_params_[2:4, i] = self.X_[indexes[i], :]
-        self.path_loss_params_[4, :] = np.random.randint(-3, 3, self.n_ap_)
         
         if verbose:
             print("The maximum indexes:\n", indexes)
@@ -115,8 +114,7 @@ class Sensor:
         p0 = parameters[0] # Signal strength at ...
         k = parameters[1] # Decaying factor
         x_ap = parameters[2:4].T # x,y coordinats of access points
-        z_ap = parameters[4] # z coordinates of access points
-        d = (np.sum((x - x_ap)**2, axis=1) + z_ap**2)**0.5 + epsilon
+        d = np.sum((x - x_ap)**2, axis=1)**0.5 + epsilon
         pl = p0 - k*np.log10(d)
         pl = np.clip(pl, 0, 1).astype(float)
         
@@ -142,7 +140,7 @@ class Sensor:
                 [0] -> X, n x 2 numpy array, position data 
                 [1] -> Z, n x 1 numpy array, RSS reading from the same access point collected at different positions.   
                 [2] -> epsilon, float, used to prevent distance evaluation from being zero
-                [3] -> k, penalty factor, positive number, used to penalize zero reading as those number indicate inability of network interface
+                [3] -> penalty, penalty factor, positive number, used to penalize zero reading as those number indicate inability of network interface
                 [4] -> evaluate_function, to calculate path loss
                 [5] -> verbose, Boolean, True to display calculation details
         
@@ -153,7 +151,7 @@ class Sensor:
         X = args[0]
         Z = args[1]
         epsilon = args[2]
-        k = args[3]
+        penalty = args[3]
         evaluate_function = args[4]
         verbose = args[5]
         
@@ -161,41 +159,44 @@ class Sensor:
         pl = evaluate_function(X, parameters, epsilon)
         
         # Compute the weights
-        sign = Z > 0
-        weights = sign + (1 - sign)*1/(1+ k)
-
-        # Compute residual
-        residual = Z - pl
+        sign = Z <= 0.1
+        deviation = sign*penalty + 0.01
         
         # Display calculation details if enabled
         if verbose: 
             print("Path loss estimation:\n", pl)
-            print("Weights:\n", weights)
-            print("Residual:\n", residual)
+            print("Deviation:\n", deviation)
             
-        return np.diag(weights).dot(residual).dot(residual)
+        log_prob = stats.norm.logpdf(pl, loc=Z, scale=deviation)
+        
+        return -np.sum(log_prob)
 
-    def calculatePathlossModel(self):
+    def calculatePathlossModel(self, verbose=False):
         """
         Calculate path loss parameters for each access point.
+        Args:
+            verbose: Boolean, to publish execution details
         """
         # Define the bound
-        bounds = [(0.85, 0.95), (0, np.inf), (-np.inf, np.inf), (-np.inf, np.inf), (-np.inf, np.inf)]
+        bounds = [(0.8, 1), (0.5, 2.5), (-np.inf, np.inf), (-np.inf, np.inf)]
         
         # Compute parameters for each access point
         for i in range(self.n_ap_):
-            print("Compute path loss parameters for ", i+1, "th access point.")
+            if verbose:
+                print("Compute path loss parameters for ", i+1, "th access point.")
             # Define arguments
             arg_list = (self.X_, self.Z_[:, i], self.epsilon_, self.penalty_factor_, self.calculatePathlossValue, False)
             # Optimize
             result = scipy.optimize.minimize(self.func, x0=self.path_loss_params_[:, i], bounds = bounds, args=arg_list)
+            
             # Refill optimized parameters
             self.path_loss_params_[:, i] = result.x
         
         # ... 
-        print("Optimized path loss parameters:\n", self.path_loss_params_)
+        if verbose:
+            print("Optimized path loss parameters:\n", self.path_loss_params_)
 
-    def calculateGP(self, verbose=True):
+    def calculateGP(self, verbose=False):
         """
         Calculate gaussian process, refer to https://gpy.readthedocs.io/en/deploy/GPy.models.html for more information about GPy
         Args:
@@ -242,11 +243,10 @@ class Sensor:
         variance = np.ones(self.n_ap_)*v
         
         # Compute probability
-        lb = (observation-mean-self.delta_)/(2*variance)**0.5
-        ub = (observation-mean+self.delta_)/(2*variance)**0.5
-        probability = 1/2*(scipy.special.erf(ub)-scipy.special.erf(lb))
-        probability[:, np.where(observation<=0.1)[0]] = 1 # Give weak signals high confidence to reduce uncertainty
+        standardized = (observation - mean)/variance**0.5
+        probability = stats.norm.pdf(standardized)
         probability = np.product(probability, axis=1)
+        probability = probability**(1/self.n_ap_)
         
         # Boost probability
         max_probability = np.max(probability)
@@ -310,7 +310,8 @@ class KNN:
     Z_ = None # RSS reading matrix: expected to be n x m
     kdtree_ = None
     n_ap_ = None
-    k_ = 5
+    k_ = 6
+    threshold_ = 1
     delta_ = 0.02
     variance_ = 0.0004
     
@@ -386,7 +387,7 @@ class KNN:
         lb = (references-observation-self.delta_)/(2*self.variance_)**0.5
         ub = (references-observation+self.delta_)/(2*self.variance_)**0.5
         probability = 1/2*(scipy.special.erf(ub)-scipy.special.erf(lb))
-        probability = np.product(probability, axis=1)
+        probability = np.product(probability, axis=1)**(1/self.n_ap_)
         weighted_probability = np.array([self.computeWeightedProbability(probability, distance_vector, i*self.k_, (i+1)*self.k_) for i in range(x.shape[0])])
         
         end = time.time()
@@ -398,7 +399,7 @@ class KNN:
         """
         Compute weighted probability based on distance
         """
-        mask = distance_vector[start:end] <= 0.3
+        mask = distance_vector[start:end] <= self.threshold_
         weights = mask + (1- mask)*(0.1/(distance_vector[start:end] + 1e-2)) # 1e-2 to prevent "divide by 0"
         return np.sum(probability[start:end]*weights)
     
@@ -414,7 +415,7 @@ class Hybrid:
     """
     knn_ = None
     estimator_ = None
-    threshold_ = 1.5
+    threshold_ = 1
     
     def __init__(self):
         """
